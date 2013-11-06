@@ -1,4 +1,4 @@
-package api;
+package org.ipccenter.newsagg.api;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -18,30 +18,34 @@ import java.util.Map;
 
 public class VKAuth {
 
-    public static final String AUTHORIZE_ADDRESS = "http://oauth.vk.com/authorize";
-    public final static String DEFAULT_REDIRECT_URL = "http://oauth.vk.com/blank.html";
-    public final static String ACCESS_TOKEN_URL = "https://oauth.vk.com/access_token";
+    private static final String AUTHORIZE_ADDRESS = "http://oauth.vk.com/authorize";
+    private final static String DEFAULT_REDIRECT_URL = "http://oauth.vk.com/blank.html";
+    private final static String ACCESS_TOKEN_URL = "https://oauth.vk.com/access_token";
 
-    public String clientID;
-    public String clientSecret;
-    public String scope;
-    public String redirectUrl = DEFAULT_REDIRECT_URL;
-    public String display;
+    private String clientID;
+    private String redirectUrl = DEFAULT_REDIRECT_URL;
 
-    public String login;
-    public String password;
+    private String login;
+    private String password;
 
-    public String accessToken;
+    private String accessToken;
 
-    public boolean authSuccess;
+    private boolean authSuccess;
+
+    public VKAuth(String clientID, String login, String password) {
+        this.clientID = clientID;
+        this.login = login;
+        this.password = password;
+        authSuccess = false;
+    }
 
     void authorize() throws IOException, IllegalAccessException {
         Map requestParams = new HashMap<String, String>();
         try {
             requestParams.put("client_id", clientID);
-            requestParams.put("scope", scope);
+            requestParams.put("scope", "wall,friends");
             requestParams.put("redirect_url", redirectUrl);
-            requestParams.put("display", display);
+            requestParams.put("display", "page");
             requestParams.put("responce_type", "token");
             Connection getRequest = Jsoup.connect(AUTHORIZE_ADDRESS).data(requestParams);
             String action = getRequest.get().select("form").attr("action");
@@ -59,7 +63,6 @@ public class VKAuth {
             }
             Map<String, String> accessTokenRequestParams = new HashMap<String, String>();
             accessTokenRequestParams.put("client_id", clientID);
-            accessTokenRequestParams.put("client_secret", clientSecret);
             accessTokenRequestParams.put("code", code);
             accessTokenRequestParams.put("redirect_url", DEFAULT_REDIRECT_URL);
             Connection accessTokenRequest = Jsoup.connect(ACCESS_TOKEN_URL).data(accessTokenRequestParams);
@@ -75,5 +78,28 @@ public class VKAuth {
 
     }
 
+    public String getAccessToken(){
+        if (authSuccess)
+            return accessToken;
+        return null;
+    }
+
+    public String getLogin(){
+        if (authSuccess)
+            return login;
+        return null;
+    }
+
+    public String getPassword(){
+        if (authSuccess)
+            return password;
+        return null;
+    }
+
+    public String getRedirectUrl(){
+        if (authSuccess)
+            return redirectUrl;
+        return null;
+    }
 
 }
