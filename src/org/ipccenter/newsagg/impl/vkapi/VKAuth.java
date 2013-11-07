@@ -1,4 +1,4 @@
-package org.ipccenter.newsagg.api;
+package org.ipccenter.newsagg.impl.vkapi;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -18,9 +18,9 @@ import java.util.Map;
 
 public class VKAuth {
 
-    private static final String AUTHORIZE_ADDRESS = "http://oauth.vk.com/authorize";
-    private final static String DEFAULT_REDIRECT_URL = "http://oauth.vk.com/blank.html";
-    private final static String ACCESS_TOKEN_URL = "https://oauth.vk.com/access_token";
+    private static final String AUTHORIZE_URL = "http://oauth.vk.com/authorize";
+    private static final String DEFAULT_REDIRECT_URL = "http://oauth.vk.com/blank.html";
+    private static final String ACCESS_TOKEN_URL = "https://oauth.vk.com/access_token";
 
     private String clientID;
     private String redirectUrl = DEFAULT_REDIRECT_URL;
@@ -39,15 +39,15 @@ public class VKAuth {
         authSuccess = false;
     }
 
-    void authorize() throws IOException, IllegalAccessException {
-        Map requestParams = new HashMap<String, String>();
+    void authorize() throws IllegalAccessException {
+        Map<String, String> requestParams = new HashMap<String, String>();
         try {
             requestParams.put("client_id", clientID);
             requestParams.put("scope", "wall,friends");
             requestParams.put("redirect_url", redirectUrl);
             requestParams.put("display", "page");
-            requestParams.put("responce_type", "token");
-            Connection getRequest = Jsoup.connect(AUTHORIZE_ADDRESS).data(requestParams);
+            requestParams.put("response_type", "token");
+            Connection getRequest = Jsoup.connect(AUTHORIZE_URL).data(requestParams);
             String action = getRequest.get().select("form").attr("action");
             Map paramsSend = new HashMap<String, String>();
             for (Element elem : getRequest.get().select("input[name]")) {

@@ -1,4 +1,4 @@
-package org.ipccenter.newsagg.api;
+package org.ipccenter.newsagg.impl.vkapi;
 
 /**
  * Created with IntelliJ IDEA.
