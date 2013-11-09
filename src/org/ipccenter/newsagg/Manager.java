@@ -1,5 +1,7 @@
 package org.ipccenter.newsagg;
 
+import org.ipccenter.newsagg.entity.News;
+
 import java.util.ArrayList;
 
 /**
@@ -11,18 +13,25 @@ import java.util.ArrayList;
  */
 public class Manager {
 
-    private Manager(){}
-    private static class ManagerHolder{
+    private Manager() {
+    }
+
+    private static class ManagerHolder {
         private static final Manager INSTANCE = new Manager();
     }
-    private static Manager getInstance(){
+
+    private static Manager getInstance() {
         return ManagerHolder.INSTANCE;
     }
 
-    ArrayList<News> getNews(){return null;}
+    ArrayList<News> getNews() {
+        return null;
+    }
 
-    void update() {}
-    void addPuller(Puller p){
+    void update() {
+    }
+
+    void addPuller(Puller p) {
         return;
     }
 

@@ -1,14 +1,16 @@
 package org.ipccenter.newsagg.impl.vkapi;
 
 import com.google.gson.Gson;
-
-import java.io.IOException;
-import java.util.*;
-
-import org.ipccenter.newsagg.News;
 import org.ipccenter.newsagg.Puller;
+import org.ipccenter.newsagg.entity.News;
 import org.ipccenter.newsagg.gson.FeedItem;
 import org.ipccenter.newsagg.gson.Response;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -23,7 +25,9 @@ public class VKPuller implements Puller {
     private List<News> postsList = new ArrayList<News>();
     private Date lastUpdate;
 
-    public long getLastUpdateTime(){ return lastUpdate.getTime();}
+    public long getLastUpdateTime() {
+        return lastUpdate.getTime();
+    }
 
     public void checkFeed() throws IOException {
         VKAuth auth = new VKAuth("215332856", "", "");
@@ -32,11 +36,11 @@ public class VKPuller implements Puller {
         String startTime = String.valueOf(getLastUpdateTime());
         String feed = getFeed.addParam("filters", filters).addParam("start_time", startTime).execute();
         Gson gson = new Gson();
-        Response feedResponse =  gson.fromJson(feed, Response.class);
+        Response feedResponse = gson.fromJson(feed, Response.class);
         if (feedResponse.getError() != null)
             throw new IllegalArgumentException(feedResponse.getError().getErrorMessage());
         FeedItem[] feedList = feedResponse.getResponse();
-        for(FeedItem feedItem : feedList)
+        for (FeedItem feedItem : feedList)
             parsePost(feedItem);
     }
 
@@ -46,7 +50,7 @@ public class VKPuller implements Puller {
         List<String> requests = Arrays.asList(KEYWORDS.values().toString());
         String count = "100";
         String startTime = String.valueOf(getLastUpdateTime());
-        for (String request: requests){
+        for (String request : requests) {
             String feed = searchFeed.addParam("q", request).addParam("count", count).addParam("start_time", startTime).execute();
             Gson gson = new Gson();
             Response searchFeedResponse = gson.fromJson(feed, Response.class);
@@ -59,16 +63,16 @@ public class VKPuller implements Puller {
 
     }
 
-    public void parsePost(FeedItem feedItem){
+    public void parsePost(FeedItem feedItem) {
         News post = new News();
-        post.source = News.Sources.VKONTAKTE;
-        post.content = feedItem.getText();
-        post.date = feedItem.getDate();
+        post.setSource("vkontakte");
+        post.setContent(feedItem.getText());
+        post.setDate(feedItem.getDate());
         if (feedItem.isCopy())
-            post.url = "vk.com/" + feedItem.getCopyPostAddress();
+            post.setUrl("vk.com/" + feedItem.getCopyPostAddress());
         else
-            post.url = "vk.com/" + feedItem.getPostAddress();
-        post.status = 0;
+            post.setUrl("vk.com/" + feedItem.getPostAddress());
+        post.setStatus(0);
         postsList.add(post);
     }
 
