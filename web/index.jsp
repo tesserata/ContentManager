@@ -13,7 +13,6 @@ Time: 18:54
 
 <f:view>
     <h:outputLabel value="Hello, world"/>
-    <button value="Update news list"
 </f:view>
 
 </body>
