@@ -15,6 +15,7 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class NewsManagedBean {
     public void generateNews() {
         LOG.info("generateNews() has been invoked");
         Calendar cal = new GregorianCalendar();
-        String date = cal.toString();
+        Date date = cal.getTime();
         News news = new News("Some content", "some url", "editor", date);
         ejbNews.persist(news);
     }
