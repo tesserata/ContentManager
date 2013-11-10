@@ -18,7 +18,7 @@ import java.util.List;
 public class NewsDAOImpl implements NewsDAO {
 
     @Override
-    public List<News> getProducts() {
+    public List<News> getNews() {
         List<News> result = null;
         Session session = HibernateUtil.getSessionFactory().openSession();
         try {
