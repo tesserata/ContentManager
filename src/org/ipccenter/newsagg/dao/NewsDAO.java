@@ -14,5 +14,5 @@ import java.util.List;
 public interface NewsDAO {
     NewsDAO INSTANCE_NEWS = new NewsDAOImpl();
 
-    List<News> getProducts();
+    List<News> getNews();
 }
