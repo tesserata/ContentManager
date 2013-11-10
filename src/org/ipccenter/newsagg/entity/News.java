@@ -10,7 +10,6 @@ package org.ipccenter.newsagg.entity; /**
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.ArrayList;
 
 @Entity
 @Table(name = "NEWS")
@@ -23,8 +22,6 @@ public class News implements Serializable {
     private Integer id;
     @Size(max = 150)
 
-
-    public ArrayList<News> origins = new ArrayList<News>();
 
     @Column(name = "SOURCE")
     private String source;
@@ -92,4 +89,8 @@ public class News implements Serializable {
         this.content = content;
     }
 
+    @Override
+    public String toString() {
+        return "News{" + "id=" + id + ", source=" + source + ", date=" + date + ", url=" + url + ", content=" + content + '}';
+    }
 }
