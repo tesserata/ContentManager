@@ -10,6 +10,7 @@ package org.ipccenter.newsagg.entity; /**
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Table(name = "NEWS")
@@ -29,8 +30,9 @@ public class News implements Serializable {
     @Column(name = "STATUS")
     private int status;    // -1 = ignored; 0 = new; 1 = posted
 
-    @Column(name = "DATE")
-    private String date;
+    @Column(name = "NEWSDATE")
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date date;
 
     @Column(name = "URL")
     private String url;
@@ -41,7 +43,7 @@ public class News implements Serializable {
     public News() {
     }
 
-    public News(String content, String url, String source, String date) {
+    public News(String content, String url, String source, Date date) {
         this.content = content;
         this.url = url;
         this.source = source;
@@ -65,11 +67,11 @@ public class News implements Serializable {
         this.status = status;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
