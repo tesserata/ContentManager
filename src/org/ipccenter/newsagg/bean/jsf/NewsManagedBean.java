@@ -6,16 +6,19 @@
 
 package org.ipccenter.newsagg.bean.jsf;
 
+
 import org.ipccenter.newsagg.bean.ejb.NewsBean;
 import org.ipccenter.newsagg.entity.News;
+import org.ipccenter.newsagg.impl.vkapi.VKPuller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -24,6 +27,8 @@ import java.util.List;
 @ManagedBean
 @RequestScoped
 public class NewsManagedBean {
+
+    private String generatedContent;
 
     private static final Logger LOG = LoggerFactory.getLogger(NewsManagedBean.class);
     @EJB
@@ -35,21 +40,50 @@ public class NewsManagedBean {
     public NewsManagedBean() {
     }
 
+    public void setGeneratedContent(String generatedContent) {
+        this.generatedContent = generatedContent;
+    }
+
+    public String getGeneratedContent() {
+        return generatedContent;
+    }
+
     public List<News> getNews() {
-//        Date date = new Date();
-//        return Arrays.asList(new News("Some content", "http://vk.com/frtk_mipt", "vkontakte", String.valueOf(date.getTime())));
         return ejbNews.getAllNews();
     }
 
     public void generateNews() {
         LOG.info("generateNews() has been invoked");
-        Calendar cal = new GregorianCalendar();
-        String date = cal.toString();
-        News news = new News("Some content", "some url", "editor", date);
+        Date now = new Date();
+        DateFormat ftm = DateFormat.getDateInstance(DateFormat.MEDIUM);
+        String date = ftm.format(now);
+        News news = new News(generatedContent, "some url", "editor", date);
         ejbNews.persist(news);
     }
 
     public int getNewsCount() {
         return ejbNews.getAllNews().size();
+    }
+
+    public String checkStatus(News news) {
+        switch (news.getStatus()) {
+            case (0):
+                return "New";
+            case (1):
+                return "Posted";
+            case (-1):
+                return "Ignored";
+        }
+        return null;
+    }
+
+    public void updateVkFeed() throws IOException {
+        VKPuller vk = new VKPuller();
+        vk.checkFeed();
+        vk.findPosts();
+        for (News news : vk.getPostsList()) {
+            ejbNews.persist(news);
+        }
+
     }
 }

@@ -2,104 +2,151 @@ package org.ipccenter.newsagg.impl.vkapi;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: darya
- * Date: 24.10.13
- * Time: 2:16
- * To change this template use File | Settings | File Templates.
+ * @author spitty
  */
-
 public class VKAuth {
 
-    private static final String AUTHORIZE_URL = "http://oauth.vk.com/authorize";
-    private static final String DEFAULT_REDIRECT_URL = "http://oauth.vk.com/blank.html";
-    private static final String ACCESS_TOKEN_URL = "https://oauth.vk.com/access_token";
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(VKAuth.class);
+    public static final String DEFAULT_REDIRECT_URL = "http://oauth.vk.com/blank.html";
     private String clientID;
-    private String redirectUrl = DEFAULT_REDIRECT_URL;
-
-    private String login;
+    private String email;
     private String password;
-
+    private String redirectURL = DEFAULT_REDIRECT_URL;
     private String accessToken;
+    private String userID;
+    private boolean authSuccessful = false;
+    private boolean authProcessed = false;
 
-    private boolean authSuccess;
-
-    public VKAuth(String clientID, String login, String password) {
+    public VKAuth(String clientID, String email, String password) {
         this.clientID = clientID;
-        this.login = login;
+        this.email = email;
         this.password = password;
-        authSuccess = false;
+        authProcessed = false;
+        authSuccessful = false;
+        accessToken = null;
     }
 
-    void authorize() throws IllegalAccessException {
-        Map<String, String> requestParams = new HashMap<String, String>();
+    public VKAuth(String accessToken, String userID) {
+        this.accessToken = accessToken;
+        this.userID = userID;
+        authSuccessful = true;
+        authProcessed = true;
+    }
+
+    public String getClientID() {
+        return clientID;
+    }
+
+    public String getAccessToken() {
+        checkAuthSuccess();
+        return accessToken;
+    }
+
+    public String getUserID() {
+        checkAuthSuccess();
+        return userID;
+    }
+
+    public boolean isAuthSuccessful() {
+        return authSuccessful;
+    }
+
+    private String getEmail() {
+        return email;
+    }
+
+    private String getPassword() {
+        return password;
+    }
+
+    public void authenticate() {
         try {
-            requestParams.put("client_id", clientID);
-            requestParams.put("scope", "wall,friends");
-            requestParams.put("redirect_url", redirectUrl);
-            requestParams.put("display", "page");
-            requestParams.put("response_type", "token");
-            Connection getRequest = Jsoup.connect(AUTHORIZE_URL).data(requestParams);
-            String action = getRequest.get().select("form").attr("action");
-            Map paramsSend = new HashMap<String, String>();
-            for (Element elem : getRequest.get().select("input[name]")) {
-                paramsSend.put(elem.attr("name"), elem.attr("value"));
+            Map<String, String> params = new HashMap<String, String>();
+            if (getClientID() == null || getPassword() == null || getEmail() == null) {
+                throw new IllegalStateException("Please specify credential");
             }
-            paramsSend.put("login", login);
-            paramsSend.put("password", password);
-            Connection.Response responce = Jsoup.connect(action).data(paramsSend).execute();
-            String codeUrl = responce.url().toString();
-            String code = codeUrl.substring(codeUrl.indexOf("=") + 1);
-            if (codeUrl.contains("error")) {
-                throw new IllegalAccessException("Authentification error");
+
+            params.put("client_id", getClientID());
+            params.put("redirect_uri", redirectURL == null ? DEFAULT_REDIRECT_URL : redirectURL);
+            params.put("scope", "wall,friends");
+            params.put("display", "page");
+            params.put("response_type", "token");
+            LOGGER.debug("Try to obtain page by next params: {}", params);
+            Connection getLoginPageRequest = Jsoup.connect("http://oauth.vk.com/oauth/authorize");
+            getLoginPageRequest.data(params);
+            Document doc = getLoginPageRequest.get();
+
+            LOGGER.trace("Login page (raw HTML): {}", doc);
+            Element form = doc.select("form").first();
+            String action = form.attr("action");
+            LOGGER.debug("Action: " + action);
+
+            Elements inputs = doc.select("input[name]");
+            Map<String, String> paramsToSend = new HashMap<String, String>();
+            for (Element e : inputs) {
+                paramsToSend.put(e.attr("name"), e.attr("value"));
+                LOGGER.debug("{} = \"{}\"", e.attr("name"), e.attr("value"));
             }
-            Map<String, String> accessTokenRequestParams = new HashMap<String, String>();
-            accessTokenRequestParams.put("client_id", clientID);
-            accessTokenRequestParams.put("code", code);
-            accessTokenRequestParams.put("redirect_url", DEFAULT_REDIRECT_URL);
-            Connection accessTokenRequest = Jsoup.connect(ACCESS_TOKEN_URL).data(accessTokenRequestParams);
-            Connection.Response accessTokenResponce =
-                    Jsoup.connect(accessTokenRequest.get().select("form").attr("action")).data(accessTokenRequestParams).execute();
-            accessToken = accessTokenResponce.parse().select("access_token").val();
-            authSuccess = true;
-        } catch (IOException e) {
-            authSuccess = false;
+            LOGGER.debug("Next parameters will be sent: {}", paramsToSend);
+            paramsToSend.put("email", email);
+            paramsToSend.put("pass", password);
+            Connection.Response execute = Jsoup.connect(action)
+                    .data(paramsToSend)
+                    .execute();
+            String url = execute.url().toString();
+
+            if (!url.contains("access_token")) {
+                LOGGER.warn("\"access_token\" absents. Probably credentials are wrong");
+                LOGGER.trace("Response body: {}", execute.body());
+                Document errorLoginPage = execute.parse();
+                String warnMessage = errorLoginPage.select("div.service_msg_warning").text();
+                authProcessed = true;
+                authSuccessful = false;
+                throw new IllegalArgumentException("Authentification fails. Please check credentials. VK warn message is "
+                        + "\"" + warnMessage + "\"");
+            }
+
+            String urlParams = url.substring(url.indexOf("#") + 1);
+            LOGGER.debug("URL params: {}", urlParams);
+            Map<String, String> result = new HashMap<String, String>();
+            for (String keyValue : urlParams.split("&")) {
+                String s[] = keyValue.split("=");
+                if (s.length == 2) {
+                    result.put(s[0], s[1]);
+                }
+            }
+            LOGGER.debug("Parsed params: {}", result);
+
+
+            accessToken = result.get("access_token");
+            userID = result.get("user_id");
+            LOGGER.debug("Access token: {}", accessToken);
+            LOGGER.debug("User ID: {}", userID);
+            authSuccessful = true;
+        } catch (IOException ex) {
+            LOGGER.error("Can't authenticate", ex);
+            authSuccessful = false;
         }
-
-        if (!authSuccess) throw new IllegalAccessException("Can't authentificate");
-
+        authProcessed = true;
     }
 
-    public String getAccessToken(){
-        if (authSuccess)
-            return accessToken;
-        return null;
+    private void checkAuthSuccess() throws IllegalStateException {
+        if (!authProcessed) {
+            authenticate();
+        }
+        if (!authSuccessful) {
+            throw new IllegalStateException("Can't authenticate with specified credentials");
+        }
     }
-
-    public String getLogin(){
-        if (authSuccess)
-            return login;
-        return null;
-    }
-
-    public String getPassword(){
-        if (authSuccess)
-            return password;
-        return null;
-    }
-
-    public String getRedirectUrl(){
-        if (authSuccess)
-            return redirectUrl;
-        return null;
-    }
-
 }

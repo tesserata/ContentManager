@@ -91,6 +91,6 @@ public class News implements Serializable {
 
     @Override
     public String toString() {
-        return "News{" + "id=" + id + ", source=" + source + ", date=" + date + ", url=" + url + ", content=" + content + '}';
+        return "News{" + "id=" + id + ", source=" + source + ", date=" + date + ", url=" + url + ", content=" + content + ", status=" + status + '}';
     }
 }

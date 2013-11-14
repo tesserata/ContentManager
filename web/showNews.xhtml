@@ -2,7 +2,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 <h:head>
     <title>Facelet Title</title>
 </h:head>
@@ -10,13 +11,17 @@
     Hello from Facelets<br/>
     News count:
     <h:outputText value="#{newsManagedBean.newsCount}"/>
-    <h:form><h:dataTable value="#{newsManagedBean.news}" var="news">
-        <h:column> #{news.content}</h:column>
-        <h:column> #{news.date}</h:column>
-        <h:column> #{news.source}</h:column>
-        <h:column> #{news.status}</h:column>
+    <h:form><h:dataTable value="#{newsManagedBean.news}" var="news" border="1">
+        <h:column headerClass="columnHeader"> <f:facet name="header"> Content </f:facet> #{news.content}</h:column>
+        <h:column headerClass="columnHeader"> <f:facet name="header"> Date </f:facet> #{news.date}</h:column>
+        <h:column headerClass="columnHeader"> <f:facet name="header"> Source </f:facet> #{news.source}</h:column>
+        <h:column headerClass="columnHeader"> <f:facet
+                name="header"> Status </f:facet> #{newsManagedBean.checkStatus(news)}</h:column>
     </h:dataTable><br/><br/>
-        <h:commandButton actionListener="#{newsManagedBean.generateNews()}" value="Generate more"/>
+        <h:inputText value="#{newsManagedBean.generatedContent}"/>
+        <h:commandButton actionListener="#{newsManagedBean.generateNews()}" value="Generate"/>
+        <br/><br/>
+        <h:commandButton actionListener="#{newsManagedBean.updateVkFeed()}" value="Update VK"/>
     </h:form>
 </h:body>
 </html>
