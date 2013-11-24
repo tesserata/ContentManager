@@ -1,28 +1,43 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-<h:head>
-    <title>Facelet Title</title>
-</h:head>
-<h:body>
-    Hello from Facelets<br/>
-    News count:
-    <h:outputText value="#{newsManagedBean.newsCount}"/>
-    <h:form><h:dataTable value="#{newsManagedBean.news}" var="news" border="1">
-        <h:column headerClass="columnHeader"> <f:facet name="header"> Content </f:facet> #{news.content}</h:column>
-        <h:column headerClass="columnHeader"> <f:facet name="header"> Date </f:facet> #{news.date}</h:column>
-        <h:column headerClass="columnHeader"> <f:facet name="header"> Source </f:facet> #{news.source}</h:column>
-        <h:column headerClass="columnHeader"> <f:facet
-                name="header"> Status </f:facet> #{newsManagedBean.checkStatus(news)}</h:column>
-    </h:dataTable><br/><br/>
-        <h:inputText value="#{newsManagedBean.generatedContent}"/>
-        <h:commandButton actionListener="#{newsManagedBean.generateNews()}" value="Generate"/>
-        <br/><br/>
-        <h:commandButton actionListener="#{newsManagedBean.updateVkFeed()}" value="Update VK"/>
-    </h:form>
-</h:body>
+    <h:head>
+        <title>All news</title>
+    </h:head>
+    <h:body><br/>
+        News count:
+        <h:outputText value="#{newsManagedBean.newsCount}"/><br/><br/>
+        <h:button value="Posted news" outcome="/postedNews.xhtml"/>  
+        <h:button value="New news" outcome="/newNews.xhtml"/>  
+        <h:button value="Ignored news" outcome="/ignoredNews.xhtml"/><br/><br/>
+        <h:form><h:dataTable value="#{newsManagedBean.news}" var="news" border="1" >
+                <h:column headerClass="columnHeader"> <f:facet name="header"> Content </f:facet> #{newsManagedBean.showContent(news)} </h:column>
+                <h:column headerClass="columnHeader"> <f:facet name="header"> Date </f:facet> #{news.date}</h:column>
+                <h:column headerClass="columnHeader"> <f:facet name="header"> Source </f:facet> #{news.source}</h:column>
+                <h:column headerClass="columnHeader"> <f:facet name="header"> Status </f:facet> #{newsManagedBean.checkStatus(news)} </h:column>
+                <h:column headerClass="columnHeader"> <f:facet name="header"> Change status </f:facet> 
+                    <h:selectOneMenu value="#{news.status}">
+                        <f:selectItem itemLabel="New" itemValue="0"/>
+                        <f:selectItem itemLabel="Posted" itemValue="1"/>
+                        <f:selectItem itemLabel="Ignored" itemValue="-1"/>    
+                    </h:selectOneMenu>
+                    <h:commandButton value="OK" actionListener="#{newsManagedBean.changeStatus(news, status)}"/>
+                </h:column>
+                  <h:column headerClass="columnHeader">
+                        <h:commandButton actionListener="#{newsManagedBean.deleteNews(news)}" value="Delete" />
+                </h:column>
+            </h:dataTable><br/><br/>
+            <h:inputTextarea value="#{newsManagedBean.generatedContent}" cols="70" rows="7"/><br/>
+            <h:commandButton actionListener="#{newsManagedBean.generateNews()}" value="Generate"/>
+            <br/><br/>
+            <h:commandButton actionListener="#{newsManagedBean.clearDB()}" value="Clear database"/>
+            <br/><br/>
+            <h:button outcome="/VKauth.xhtml" value="VK Auth"/>
+            <h:commandButton actionListener="#{newsManagedBean.updateVkFeed()}" value="Update VK"/>
+        </h:form>
+    </h:body>
 </html>
 

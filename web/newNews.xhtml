@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Created by IntelliJ IDEA.
+  User: darya
+  Date: 18.11.13
+  Time: 16:37
+-->
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <title>New news</title>
+</h:head>
+
+<h:body>
+    News count:
+    <h:outputText value="#{newsManagedBean.newNewsCount}"/><br/><br/>
+    <h:button outcome="/showNews.xhtml" value="Back to all news"/><br/><br/>
+    <h:form><h:dataTable value="#{newsManagedBean.newNews}" var="news" border="1" >
+        <h:column headerClass="columnHeader"> <f:facet name="header"> Content </f:facet> #{newsManagedBean.showContent(news)}</h:column>
+        <h:column headerClass="columnHeader"> <f:facet name="header"> Date </f:facet> #{news.date}</h:column>
+        <h:column headerClass="columnHeader"> <f:facet name="header"> Source </f:facet> #{news.source}</h:column>
+        <h:column headerClass="columnHeader"> <f:facet
+                name="header"> Status </f:facet> #{newsManagedBean.checkStatus(news)}</h:column>
+    </h:dataTable><br/><br/>
+    </h:form>
+</h:body>
+
+</html>
