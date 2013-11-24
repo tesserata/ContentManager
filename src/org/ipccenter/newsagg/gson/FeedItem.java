@@ -2,6 +2,8 @@ package org.ipccenter.newsagg.gson;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Date;
+
 /**
  * Created with IntelliJ IDEA.
  * User: darya
@@ -29,7 +31,11 @@ public class FeedItem {
         if (postType.equalsIgnoreCase("copy")) return true; else return false;
     }
 
-    public String getDate(){ return date;}
+    public Date getDate(){
+        Date d = new Date();
+        d.setTime(Long.valueOf(date));
+        return d;
+    }
     public String getPostAddress(){
         if (sourceID.toString().contains("-")) sourceID.deleteCharAt(0);
         return sourceID.toString() + '_' + postID;

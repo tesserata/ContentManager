@@ -14,11 +14,15 @@ import org.jsoup.Jsoup;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class VKMethod {
     private String methodName;
     private VKAuth auth;
     private Map<String, String> params;
+    
+    private static final Logger LOG = LoggerFactory.getLogger(VKMethod.class);
 
     public VKMethod(String methodName, VKAuth auth) {
         this.methodName = methodName;
@@ -34,6 +38,7 @@ public class VKMethod {
     }
 
     public String execute() throws IOException {
+        LOG.info("Data: {}", params.values());
         Connection.Response result = Jsoup.connect("https://api.vk.com/method/" + methodName)
                 .data(params)
                 .data("access_token", auth.getAccessToken())

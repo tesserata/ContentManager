@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * @author spitty
@@ -19,7 +20,7 @@ public class VKAuth {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VKAuth.class);
     public static final String DEFAULT_REDIRECT_URL = "http://oauth.vk.com/blank.html";
-    private String clientID;
+    private static String clientID = "3995065";
     private String email;
     private String password;
     private String redirectURL = DEFAULT_REDIRECT_URL;
@@ -27,6 +28,11 @@ public class VKAuth {
     private String userID;
     private boolean authSuccessful = false;
     private boolean authProcessed = false;
+    private static String authURL;
+    
+    public VKAuth(){
+        buildAuthUrl();
+    }
 
     public VKAuth(String clientID, String email, String password) {
         this.clientID = clientID;
@@ -44,12 +50,15 @@ public class VKAuth {
         authProcessed = true;
     }
 
+    public void setAccessToken(String accessToken){
+        this.accessToken = accessToken;
+    }
     public String getClientID() {
         return clientID;
     }
 
     public String getAccessToken() {
-        checkAuthSuccess();
+        //checkAuthSuccess();
         return accessToken;
     }
 
@@ -69,6 +78,20 @@ public class VKAuth {
     private String getPassword() {
         return password;
     }
+    
+    private void buildAuthUrl(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://oauth.vk.com/oauth/authorize?");
+        sb.append("client_id").append("=").append("3995065").append("&");
+        sb.append("redirect_uri").append("=").append(StringEscapeUtils.escapeHtml4("http://localhost:8080/NewsAggregator/faces/catch_auth.jsp")).append("&");
+        sb.append("scope").append("=").append("wall,friends").append("&");
+        sb.append("display").append("=").append("page").append("&");
+        sb.append("response_type").append("=").append("token");
+        authURL = sb.toString();
+    }
+    public static String getAuthURL() {
+        return authURL;
+    }
 
     public void authenticate() {
         try {
@@ -80,7 +103,7 @@ public class VKAuth {
             params.put("client_id", getClientID());
             params.put("redirect_uri", redirectURL == null ? DEFAULT_REDIRECT_URL : redirectURL);
             params.put("scope", "wall,friends");
-            params.put("display", "page");
+            params.put("display", "popup");
             params.put("response_type", "token");
             LOGGER.debug("Try to obtain page by next params: {}", params);
             Connection getLoginPageRequest = Jsoup.connect("http://oauth.vk.com/oauth/authorize");
@@ -98,17 +121,44 @@ public class VKAuth {
                 paramsToSend.put(e.attr("name"), e.attr("value"));
                 LOGGER.debug("{} = \"{}\"", e.attr("name"), e.attr("value"));
             }
-            LOGGER.debug("Next parameters will be sent: {}", paramsToSend);
-            paramsToSend.put("email", email);
-            paramsToSend.put("pass", password);
+            paramsToSend.put("email", this.email);
+            paramsToSend.put("pass", this.password);
+//            LOGGER.info("Next parameters will be sent: {}", paramsToSend);
             Connection.Response execute = Jsoup.connect(action)
                     .data(paramsToSend)
                     .execute();
             String url = execute.url().toString();
+//            String __q_hash = url.substring(url.indexOf("q_hash")+6);
+            
+            LOGGER.info("Response URL: {}", url);
+            
+//            Document requestGrantPage = execute.parse();
+//            Element form2 = requestGrantPage.select("form").first();
+//            String action2 = form2.attr("action");
+//            
+//            LOGGER.info("MALO Request Grant Page: " + requestGrantPage);
+//            LOGGER.info("MALO Action: " + action2);
+//            Connection.Response execute2 = Jsoup.connect(action2).method(Connection.Method.POST)
+//                    .execute();
+//            LOGGER.info("MALO Login page (raw HTML): {}", execute2);
+//            String url2 = execute2.url().toString();
+//            LOGGER.info("MALO Response URL: {}", url2);
+            /*Map<String, String> authParams = new HashMap<String, String>();
+            authParams.put("role", "fast");
+            authParams.put("redirect", "1");
+            authParams.put("to", "");
+            authParams.put("s", "1");
+            authParams.put("__q_hash", __q_hash);
+            Connection.Response authExec = Jsoup.connect(action)
+                    .data(authParams)
+                    .execute();
+            
+            String authUrl = authExec.url().toString();
+            LOGGER.info("AuthExec url: {}", authUrl);*/
 
             if (!url.contains("access_token")) {
                 LOGGER.warn("\"access_token\" absents. Probably credentials are wrong");
-                LOGGER.trace("Response body: {}", execute.body());
+                LOGGER.info("Response body: {}", execute.body());
                 Document errorLoginPage = execute.parse();
                 String warnMessage = errorLoginPage.select("div.service_msg_warning").text();
                 authProcessed = true;

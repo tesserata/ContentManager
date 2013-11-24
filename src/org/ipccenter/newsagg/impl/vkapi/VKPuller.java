@@ -23,7 +23,13 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class VKPuller implements Puller {
+    
+    public VKPuller(VKAuth auth){
+        this.auth = auth;
+    }
 
+    private VKAuth auth;
+    
     private static final Logger LOG = LoggerFactory.getLogger(VKPuller.class);
 
     private List<News> postsList = new ArrayList<News>();
@@ -38,29 +44,36 @@ public class VKPuller implements Puller {
     }
 
     public void checkFeed() throws IOException {
-        LOG.info("Trying to auth");
-        VKAuth auth = new VKAuth("3995065", "", "");
+        //VKAuth auth = new VKAuth("3995065", "+79253243216", "IV625k7E70");
         VKMethod getFeed = new VKMethod("newsfeed.get", auth);
         String filters = "post,note";
         String startTime = String.valueOf(getLastUpdateTime() - 12 * 60 * 60 * 100);
-        String feed = getFeed.addParam("filters", filters).addParam("start_time", startTime).execute();
+        getFeed.addParam("filters", filters).addParam("start_time", startTime);
+        LOG.info("Search method params: {}", getFeed.getParams());
+        String feed = getFeed.execute();
         Gson gson = new Gson();
         Response feedResponse = gson.fromJson(feed, Response.class);
-        if (feedResponse.getError() != null)
+        LOG.info("Responce: {}", feedResponse);
+        if (feedResponse.getError() != null){
+            LOG.warn("Cannot get response. Error message is: {}", feedResponse.getError().getErrorMessage());
             throw new IllegalArgumentException(feedResponse.getError().getErrorMessage());
+        }
         FeedItem[] feedList = feedResponse.getResponse();
+        LOG.info("News amount: {}", feedList.length);
         for (FeedItem feedItem : feedList)
             parsePost(feedItem);
     }
 
     public void findPosts() throws IOException {
-        VKAuth auth = new VKAuth("3995065", "", "");
+        //VKAuth auth = new VKAuth("3995065", "+79253243216", "IV625k7E70");
         VKMethod searchFeed = new VKMethod("newsfeed.search", auth);
         List<String> requests = Arrays.asList(KEYWORDS.values().toString());
         String count = "100";
         String startTime = String.valueOf(getLastUpdateTime());
         for (String request : requests) {
-            String feed = searchFeed.addParam("q", request).addParam("count", count).addParam("start_time", startTime).execute();
+            searchFeed.addParam("q", request).addParam("count", count).addParam("start_time", startTime);
+            //LOG.info("")
+            String feed = searchFeed.execute();
             Gson gson = new Gson();
             Response searchFeedResponse = gson.fromJson(feed, Response.class);
             if (searchFeedResponse.getError() != null)
