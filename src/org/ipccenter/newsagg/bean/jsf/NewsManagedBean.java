@@ -17,9 +17,9 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.ipccenter.newsagg.impl.vkapi.VKAuth;
 
 /**
  * @author darya
@@ -40,6 +40,27 @@ public class NewsManagedBean {
     public NewsManagedBean() {
     }
 
+    private static Map<Integer, String> statuses;
+    private VKAuth vkauth = new VKAuth();
+    
+    private String vkAuthURL = buildAuthUrl();
+    private String vkAccessToken;
+
+
+    static {
+        statuses = new LinkedHashMap<Integer, String>();
+        statuses.put(0, "New");
+        statuses.put(1, "Posted");
+        statuses.put(-1, "Ignored");
+    }
+
+    public String getVkAuthURL(){
+        return vkAuthURL;
+    }
+    public Collection<String> getStatuses(){
+        return statuses.values();
+    }
+
     public void setGeneratedContent(String generatedContent) {
         this.generatedContent = generatedContent;
     }
@@ -52,17 +73,39 @@ public class NewsManagedBean {
         return ejbNews.getAllNews();
     }
 
+    public List<News> getPostedNews(){
+        return ejbNews.getPostedNews();
+    }
+
+    public List<News> getNewNews(){
+        return ejbNews.getNewNews();
+    }
+
+    public List<News> getIgnoredNews(){
+        return ejbNews.getIgnoredNews();
+    }
+
     public void generateNews() {
         LOG.info("generateNews() has been invoked");
-        Date now = new Date();
-        DateFormat ftm = DateFormat.getDateInstance(DateFormat.MEDIUM);
-        String date = ftm.format(now);
+        Date date = new Date();
         News news = new News(generatedContent, "some url", "editor", date);
         ejbNews.persist(news);
     }
 
     public int getNewsCount() {
         return ejbNews.getAllNews().size();
+    }
+
+    public int getPostedNewsCount(){
+        return ejbNews.getPostedNews().size();
+    }
+
+    public int getNewNewsCount(){
+        return ejbNews.getNewNews().size();
+    }
+
+    public int getIgnoredNewsCount(){
+        return ejbNews.getIgnoredNews().size();
     }
 
     public String checkStatus(News news) {
@@ -74,11 +117,60 @@ public class NewsManagedBean {
             case (-1):
                 return "Ignored";
         }
+       
         return null;
     }
-
+    
+    public void changeStatus(News news, String status){
+        if (status.equalsIgnoreCase("New")) news.setStatus(0);
+        if (status.equalsIgnoreCase("Posted")) news.setStatus(1);
+        if (status.equalsIgnoreCase("Ignored")) news.setStatus(-1);
+        news = ejbNews.merge(news);
+    }
+    
+    public void clearDB(){
+        ejbNews.clearDataBase();
+    }
+    
+    public String showContent(News item){
+        if (item.getContent().length()<50){
+            return item.getContent();
+        }
+        else{
+            return item.getContent().substring(0, 50).concat("...");
+        }
+    }
+    
+    public void deleteNews(News news){
+        ejbNews.deleteNews(news);
+    }
+    
+    private String buildAuthUrl(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://oauth.vk.com/oauth/authorize?");
+        sb.append("client_id").append("=").append("3995065").append("&");
+        sb.append("redirect_uri").append("=").append(StringEscapeUtils.escapeHtml4("http://localhost:8080/NewsAggregator/faces/VKauth.xhtml")).append("&");
+        sb.append("scope").append("=").append("wall,friends").append("&");
+        sb.append("display").append("=").append("page").append("&");
+        sb.append("response_type").append("=").append("token");
+        return sb.toString();
+    }
+    
+    
+    public void toAuthVK(){
+        this.vkauth.setAccessToken(this.vkAccessToken);
+    }
+    
+    public void setVkAccessToken(String accessToken){
+        this.vkAccessToken = accessToken;
+    }
+    
+    public String getVkAccessToken(){
+        return this.vkAccessToken;
+    }
+    
     public void updateVkFeed() throws IOException {
-        VKPuller vk = new VKPuller();
+        VKPuller vk = new VKPuller(vkauth);
         vk.checkFeed();
         vk.findPosts();
         for (News news : vk.getPostsList()) {

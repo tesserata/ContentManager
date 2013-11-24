@@ -10,6 +10,7 @@ package org.ipccenter.newsagg.entity; /**
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.util.Date;
 
 @Entity
@@ -30,9 +31,9 @@ public class News implements Serializable {
     @Column(name = "STATUS")
     private int status;    // -1 = ignored; 0 = new; 1 = posted
 
-    @Column(name = "NEWSDATE")
-    @Temporal(javax.persistence.TemporalType.DATE)
-    private Date date;
+    @Column(name = "DATE")
+    //@Temporal(javax.persistence.TemporalType.DATE)
+    private String date;
 
     @Column(name = "URL")
     private String url;
@@ -47,10 +48,15 @@ public class News implements Serializable {
         this.content = content;
         this.url = url;
         this.source = source;
-        this.date = date;
+        DateFormat ftm = DateFormat.getDateInstance(DateFormat.MEDIUM);
+        String formatedDate = ftm.format(date);
+        this.date = formatedDate;
         this.status = 0;
     }
 
+    public Integer getId(){
+        return this.id;
+    }
     public String getSource() {
         return source;
     }
@@ -67,12 +73,14 @@ public class News implements Serializable {
         this.status = status;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
     public void setDate(Date date) {
-        this.date = date;
+        DateFormat ftm = DateFormat.getDateInstance(DateFormat.MEDIUM);
+        String formatedDate = ftm.format(date);
+        this.date = formatedDate;
     }
 
     public String getUrl() {

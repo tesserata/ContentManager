@@ -23,7 +23,7 @@ public class NewsBean {
     @PersistenceUnit()
     EntityManagerFactory emf;
 
-    public List getAllNews() {
+    public List<News> getAllNews() {
         EntityManager em = null;
         try {
             em = emf.createEntityManager();
@@ -31,6 +31,48 @@ public class NewsBean {
         } finally {
             if (em != null) {
                 em.close();
+            }
+        }
+    }
+
+    public List<News> getPostedNews(){
+        EntityManager em = null;
+        try{
+            em = emf.createEntityManager();
+            return em.createQuery("select n from News n where n.status = 1").getResultList();
+        }
+        finally {
+            {
+                if (em != null)
+                    em.close();
+            }
+        }
+    }
+
+    public List<News> getNewNews(){
+        EntityManager em = null;
+        try{
+            em = emf.createEntityManager();
+            return em.createQuery("select n from News n where n.status=0").getResultList();
+        }
+        finally {
+            {
+                if (em != null)
+                    em.close();
+            }
+        }
+    }
+
+    public List<News> getIgnoredNews(){
+        EntityManager em = null;
+        try{
+            em = emf.createEntityManager();
+            return em.createQuery("select n from News n where n.status=-1").getResultList();
+        }
+        finally {
+            {
+                if (em != null)
+                    em.close();
             }
         }
     }
@@ -44,6 +86,52 @@ public class NewsBean {
             em.flush();
         } finally {
             if (em != null) {
+                em.close();
+            }
+        }
+    }
+    
+    public News merge(News news) {
+        LOG.info("try to persist({})", news);
+        EntityManager em = null;
+        try {
+            em = emf.createEntityManager();
+            News updated = em.merge(news);
+            em.flush();
+            return updated;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+    
+    public void clearDataBase(){
+        EntityManager em = null;
+        try{
+            em = emf.createEntityManager();
+            for (Object news: em.createQuery("select n from News n").getResultList()){
+                em.remove(news);
+            }
+            em.flush();
+        }
+        finally{
+            if (em != null){
+                em.close();
+            }
+        }
+    }
+    
+    public void deleteNews(News news){
+        EntityManager em = null;
+        try{
+            em = emf.createEntityManager();
+            Object deleted = em.createQuery("select n from News n where n.id=" + news.getId().toString()).getSingleResult();
+            em.remove(deleted);
+            em.flush();
+        }
+        finally{
+            if (em != null){
                 em.close();
             }
         }
