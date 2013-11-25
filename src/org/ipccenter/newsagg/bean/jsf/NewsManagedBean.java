@@ -7,25 +7,26 @@
 package org.ipccenter.newsagg.bean.jsf;
 
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.ipccenter.newsagg.bean.ejb.NewsBean;
 import org.ipccenter.newsagg.entity.News;
+import org.ipccenter.newsagg.impl.vkapi.VKAuth;
 import org.ipccenter.newsagg.impl.vkapi.VKPuller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
+import javax.faces.bean.SessionScoped;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.ipccenter.newsagg.impl.vkapi.VKAuth;
 
 /**
  * @author darya
  */
 @ManagedBean
-@RequestScoped
+@SessionScoped
 public class NewsManagedBean {
 
     private String generatedContent;
@@ -34,17 +35,12 @@ public class NewsManagedBean {
     @EJB
     NewsBean ejbNews;
 
-    /**
-     * Creates a new instance of NewsManagedBean
-     */
-    public NewsManagedBean() {
-    }
-
     private static Map<Integer, String> statuses;
     private VKAuth vkauth = new VKAuth();
-    
+
     private String vkAuthURL = buildAuthUrl();
     private String vkAccessToken;
+    private String userID;
 
 
     static {
@@ -54,10 +50,18 @@ public class NewsManagedBean {
         statuses.put(-1, "Ignored");
     }
 
-    public String getVkAuthURL(){
+    /**
+     * Creates a new instance of NewsManagedBean
+     */
+    public NewsManagedBean() {
+    }
+
+    public String getVkAuthURL() {
+        LOG.info("vkAuthURL: {}", vkAuthURL);
         return vkAuthURL;
     }
-    public Collection<String> getStatuses(){
+
+    public Collection<String> getStatuses() {
         return statuses.values();
     }
 
@@ -73,15 +77,15 @@ public class NewsManagedBean {
         return ejbNews.getAllNews();
     }
 
-    public List<News> getPostedNews(){
+    public List<News> getPostedNews() {
         return ejbNews.getPostedNews();
     }
 
-    public List<News> getNewNews(){
+    public List<News> getNewNews() {
         return ejbNews.getNewNews();
     }
 
-    public List<News> getIgnoredNews(){
+    public List<News> getIgnoredNews() {
         return ejbNews.getIgnoredNews();
     }
 
@@ -96,15 +100,15 @@ public class NewsManagedBean {
         return ejbNews.getAllNews().size();
     }
 
-    public int getPostedNewsCount(){
+    public int getPostedNewsCount() {
         return ejbNews.getPostedNews().size();
     }
 
-    public int getNewNewsCount(){
+    public int getNewNewsCount() {
         return ejbNews.getNewNews().size();
     }
 
-    public int getIgnoredNewsCount(){
+    public int getIgnoredNewsCount() {
         return ejbNews.getIgnoredNews().size();
     }
 
@@ -117,59 +121,79 @@ public class NewsManagedBean {
             case (-1):
                 return "Ignored";
         }
-       
+
         return null;
     }
-    
-    public void changeStatus(News news, String status){
+
+    public void changeStatus(News news, String status) {
         if (status.equalsIgnoreCase("New")) news.setStatus(0);
         if (status.equalsIgnoreCase("Posted")) news.setStatus(1);
         if (status.equalsIgnoreCase("Ignored")) news.setStatus(-1);
         news = ejbNews.merge(news);
     }
-    
-    public void clearDB(){
+
+    public void clearDB() {
         ejbNews.clearDataBase();
     }
-    
-    public String showContent(News item){
-        if (item.getContent().length()<50){
+
+    public String showContent(News item) {
+        if (item.getContent().length() < 50) {
             return item.getContent();
-        }
-        else{
+        } else {
             return item.getContent().substring(0, 50).concat("...");
         }
     }
-    
-    public void deleteNews(News news){
+
+    public void deleteNews(News news) {
         ejbNews.deleteNews(news);
     }
-    
-    private String buildAuthUrl(){
+
+    private String buildAuthUrl() {
         StringBuilder sb = new StringBuilder();
         sb.append("http://oauth.vk.com/oauth/authorize?");
-        sb.append("client_id").append("=").append("3995065").append("&");
-        sb.append("redirect_uri").append("=").append(StringEscapeUtils.escapeHtml4("http://localhost:8080/NewsAggregator/faces/VKauth.xhtml")).append("&");
+        sb.append("client_id").append("=").append("4017304").append("&");
+        sb.append("redirect_uri").append("=").append(StringEscapeUtils.escapeHtml4("http://oauth.vk.com/blank.html")).append("&");
         sb.append("scope").append("=").append("wall,friends").append("&");
         sb.append("display").append("=").append("page").append("&");
         sb.append("response_type").append("=").append("token");
         return sb.toString();
     }
-    
-    
-    public void toAuthVK(){
+
+
+    public String toAuthVK() {
+        LOG.info("Set access token to {}", this.vkAccessToken);
         this.vkauth.setAccessToken(this.vkAccessToken);
+        this.vkauth.setUserID(this.userID);
+        return "showNews";
     }
-    
-    public void setVkAccessToken(String accessToken){
+
+    public void setVkAccessToken(String accessToken) {
+        LOG.info("Call setVkAccessToken({})", accessToken);
         this.vkAccessToken = accessToken;
     }
-    
-    public String getVkAccessToken(){
+
+    public String getVkAccessToken() {
         return this.vkAccessToken;
     }
-    
+
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
+
+    public String getUserID() {
+        if (userID == null) {
+            userID = "11508656";
+        }
+        return userID;
+    }
+
+    public void getFriends() throws IOException, NoSuchAlgorithmException {
+        VKPuller vk = new VKPuller(vkauth);
+        vk.getFriends();
+    }
+
     public void updateVkFeed() throws IOException {
+        LOG.info("Access token before requesting news: {}", vkauth.getAccessToken());
         VKPuller vk = new VKPuller(vkauth);
         vk.checkFeed();
         vk.findPosts();
