@@ -10,18 +10,18 @@ package org.ipccenter.newsagg.impl.vkapi;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class VKMethod {
     private String methodName;
     private VKAuth auth;
     private Map<String, String> params;
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(VKMethod.class);
 
     public VKMethod(String methodName, VKAuth auth) {
@@ -38,11 +38,18 @@ public class VKMethod {
     }
 
     public String execute() throws IOException {
-        LOG.info("Data: {}", params.values());
-        Connection.Response result = Jsoup.connect("https://api.vk.com/method/" + methodName)
+        LOG.info("Data: {}", params);
+        LOG.info("Data: access_token:{}", auth.getAccessToken());
+        final Connection connect = Jsoup.connect("https://api.vk.com/method/" + methodName)
+                //.data("api_id", "4017304")
+                //.data("method", methodName)
+                //.data("sig", makeSig())
+                //.data("sid", "")
                 .data(params)
                 .data("access_token", auth.getAccessToken())
-                .ignoreContentType(true)
+                .ignoreContentType(true);
+        LOG.info("Connection request: {}", connect.request().data());
+        Connection.Response result = connect
                 .execute();
         return result.body();
     }
@@ -50,6 +57,18 @@ public class VKMethod {
     public String getMethodName() {
         return methodName;
     }
+    
+    /*public String makeSig() throws NoSuchAlgorithmException{
+        StringBuilder sig = new StringBuilder();
+        sig.append(auth.getUserID())
+                .append("api_id=4017304")
+                .append("method=").append(methodName)
+                .append("KJRPvWDdaD5hcPxXtsn4");
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        byte[] input = String.valueOf(sig).getBytes();
+        input = md.digest(input);
+        return input.toString();
+    }*/
 
     public Map<String, String> getParams() {
         return params;

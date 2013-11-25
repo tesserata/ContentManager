@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * @author spitty
@@ -20,24 +19,24 @@ public class VKAuth {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VKAuth.class);
     public static final String DEFAULT_REDIRECT_URL = "http://oauth.vk.com/blank.html";
-    private static String clientID = "3995065";
-    private String email;
-    private String password;
+    private static String clientID = "4017304";
+    //private String email;
+    //private String password;
     private String redirectURL = DEFAULT_REDIRECT_URL;
     private String accessToken;
     private String userID;
     private boolean authSuccessful = false;
     private boolean authProcessed = false;
     private static String authURL;
-    
-    public VKAuth(){
-        buildAuthUrl();
+
+    public VKAuth() {
+        return;
     }
 
     public VKAuth(String clientID, String email, String password) {
         this.clientID = clientID;
-        this.email = email;
-        this.password = password;
+        //this.email = email;
+        //this.password = password;
         authProcessed = false;
         authSuccessful = false;
         accessToken = null;
@@ -50,9 +49,10 @@ public class VKAuth {
         authProcessed = true;
     }
 
-    public void setAccessToken(String accessToken){
+    public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
+
     public String getClientID() {
         return clientID;
     }
@@ -63,7 +63,7 @@ public class VKAuth {
     }
 
     public String getUserID() {
-        checkAuthSuccess();
+        //checkAuthSuccess();
         return userID;
     }
 
@@ -71,24 +71,25 @@ public class VKAuth {
         return authSuccessful;
     }
 
-    private String getEmail() {
+    /*private String getEmail() {
         return email;
     }
 
     private String getPassword() {
         return password;
-    }
+    }*/
     
-    private void buildAuthUrl(){
+    /*private void buildAuthUrl(){
         StringBuilder sb = new StringBuilder();
         sb.append("http://oauth.vk.com/oauth/authorize?");
-        sb.append("client_id").append("=").append("3995065").append("&");
-        sb.append("redirect_uri").append("=").append(StringEscapeUtils.escapeHtml4("http://localhost:8080/NewsAggregator/faces/catch_auth.jsp")).append("&");
+        sb.append("client_id").append("=").append("4017304").append("&");
+        sb.append("redirect_uri").append("=").append(StringEscapeUtils.escapeHtml4(DEFAULT_REDIRECT_URL)).append("&");
         sb.append("scope").append("=").append("wall,friends").append("&");
         sb.append("display").append("=").append("page").append("&");
         sb.append("response_type").append("=").append("token");
         authURL = sb.toString();
-    }
+    }*/
+
     public static String getAuthURL() {
         return authURL;
     }
@@ -96,7 +97,7 @@ public class VKAuth {
     public void authenticate() {
         try {
             Map<String, String> params = new HashMap<String, String>();
-            if (getClientID() == null || getPassword() == null || getEmail() == null) {
+            if (getClientID() == null) {
                 throw new IllegalStateException("Please specify credential");
             }
 
@@ -121,17 +122,15 @@ public class VKAuth {
                 paramsToSend.put(e.attr("name"), e.attr("value"));
                 LOGGER.debug("{} = \"{}\"", e.attr("name"), e.attr("value"));
             }
-            paramsToSend.put("email", this.email);
-            paramsToSend.put("pass", this.password);
 //            LOGGER.info("Next parameters will be sent: {}", paramsToSend);
             Connection.Response execute = Jsoup.connect(action)
                     .data(paramsToSend)
                     .execute();
             String url = execute.url().toString();
 //            String __q_hash = url.substring(url.indexOf("q_hash")+6);
-            
+
             LOGGER.info("Response URL: {}", url);
-            
+
 //            Document requestGrantPage = execute.parse();
 //            Element form2 = requestGrantPage.select("form").first();
 //            String action2 = form2.attr("action");
@@ -199,4 +198,8 @@ public class VKAuth {
             throw new IllegalStateException("Can't authenticate with specified credentials");
         }
     }
-}
+
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
+} 
