@@ -144,6 +144,10 @@ public class NewsManagedBean {
         }
     }
 
+    public News showAll(News item) {
+        return null;
+    }
+
     public void deleteNews(News news) {
         ejbNews.deleteNews(news);
     }
@@ -196,7 +200,7 @@ public class NewsManagedBean {
         LOG.info("Access token before requesting news: {}", vkauth.getAccessToken());
         VKPuller vk = new VKPuller(vkauth);
         vk.checkFeed();
-        vk.findPosts();
+        //vk.findPosts();
         for (News news : vk.getPostsList()) {
             ejbNews.persist(news);
         }
