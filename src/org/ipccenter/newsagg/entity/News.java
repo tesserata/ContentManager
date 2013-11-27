@@ -18,7 +18,7 @@ import java.util.Date;
 
 public class News implements Serializable {
     @Id
-    @Column(name = "ID")
+    @Column(name = "ID", unique = true)
     @TableGenerator(name = "newsid", table = "newspktb", pkColumnName = "idNews", pkColumnValue = "idNewsValue")
     @GeneratedValue(strategy = GenerationType.TABLE, generator = "newsid")
     private Integer id;
@@ -38,7 +38,7 @@ public class News implements Serializable {
     @Column(name = "URL")
     private String url;
 
-    @Column(name = "CONTENT")
+    @Column(name = "CONTENT", length = 2000)
     private String content;
 
     public News() {
@@ -54,9 +54,10 @@ public class News implements Serializable {
         this.status = 0;
     }
 
-    public Integer getId(){
+    public Integer getId() {
         return this.id;
     }
+
     public String getSource() {
         return source;
     }
