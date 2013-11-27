@@ -1,5 +1,6 @@
 package org.ipccenter.newsagg.gson;
 
+
 /**
  * Created with IntelliJ IDEA.
  * User: darya
@@ -9,10 +10,10 @@ package org.ipccenter.newsagg.gson;
  */
 public class Response {
 
-    private FeedItem[] response;
+    private Feed response;
     private Error error;
 
-    public FeedItem[] getResponse() {
+    public Feed getResponse() {
         return response;
     }
 

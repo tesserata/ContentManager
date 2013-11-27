@@ -1,6 +1,5 @@
+package org.ipccenter.newsagg.gson;
 
-import com.google.gson.annotations.SerializedName;
-import org.ipccenter.newsagg.gson.FeedItem;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -9,19 +8,23 @@ import org.ipccenter.newsagg.gson.FeedItem;
  */
 
 /**
- *
  * @author darya
  */
 public class Feed {
-    @SerializedName("items")
     private FeedItem[] items;
+
+    private int new_offset;
 
     public FeedItem[] getItems() {
         return items;
-    }   
-    
+    }
+
+    public int getNewOffset() {
+        return new_offset;
+    }
+
     @Override
     public String toString() {
-        return "Feed{" + "items=" + items + '}';
+        return "Feed{" + "items=" + items + ", new_offset=" + new_offset + '}';
     }
 }

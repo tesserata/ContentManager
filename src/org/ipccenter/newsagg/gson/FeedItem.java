@@ -1,6 +1,9 @@
 package org.ipccenter.newsagg.gson;
 
 import com.google.gson.annotations.SerializedName;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
@@ -11,7 +14,11 @@ import java.util.Date;
  * Time: 2:54
  * To change this template use File | Settings | File Templates.
  */
+
 public class FeedItem {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FeedItem.class);
+
     @SerializedName("date")
     private String date;
     @SerializedName("post_id")
@@ -27,23 +34,31 @@ public class FeedItem {
     @SerializedName("text")
     private String text;
 
-    public boolean isCopy(){
-        if (postType.equalsIgnoreCase("copy")) return true; else return false;
+    public boolean isCopy() {
+        return postType.equalsIgnoreCase("copy");
     }
 
-    public Date getDate(){
+    public Date getDate() {
         Date d = new Date();
-        d.setTime(Long.valueOf(date));
+        LOG.info("Date unix value: {}", date);
+        LOG.info("Date value: {}", d);
         return d;
     }
-    public String getPostAddress(){
-        if (sourceID.toString().contains("-")) sourceID.deleteCharAt(0);
-        return sourceID.toString() + '_' + postID;
+
+    public String getPostAddress() {
+        return "wall" + sourceID.toString() + '_' + postID;
     }
-    public String getPostType(){ return postType;}
-    public String getCopyPostAddress(){
-        if (ownerID.toString().contains("-")) ownerID.deleteCharAt(0);
-        return ownerID.toString() + '_' + copyPostID;
+
+    public String getPostType() {
+        return postType;
     }
-    public String getText(){return text;}
+
+    public String getCopyPostAddress() {
+        return "wall" + ownerID.toString() + '_' + copyPostID;
+    }
+
+    public String getText() {
+        return StringEscapeUtils.unescapeHtml3(text);
+    }
+
 }
