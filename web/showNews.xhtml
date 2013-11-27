@@ -16,47 +16,105 @@
     <h:button value="Ignored news" outcome="/ignoredNews.xhtml"/>
     <br/><br/>
     <h:form>
-        <h:dataTable value="#{newsManagedBean.news}" var="news" border="1">
-            <h:column headerClass="columnHeader">
-                <f:facet name="header"> Content</f:facet>
-                #{newsManagedBean.showContent(news)}
-            </h:column>
-            <h:column headerClass="columnHeader">
-                <f:facet name="header"> Date</f:facet>
-                #{news.date}
-            </h:column>
-            <h:column headerClass="columnHeader">
-                <f:facet name="header"> Source</f:facet>
-                #{news.source}
-            </h:column>
-            <h:column headerClass="columnHeader">
-                <f:facet name="header"> Status</f:facet>
-                #{newsManagedBean.checkStatus(news)}
-            </h:column>
-            <h:column headerClass="columnHeader">
-                <f:facet name="header"> Change status</f:facet>
-                <h:selectOneMenu value="#{news.status}">
-                    <f:selectItem itemLabel="New" itemValue="0"/>
-                    <f:selectItem itemLabel="Posted" itemValue="1"/>
-                    <f:selectItem itemLabel="Ignored" itemValue="-1"/>
-                </h:selectOneMenu>
-                <h:commandButton value="OK" actionListener="#{newsManagedBean.changeStatus(news, status)}"/>
-            </h:column>
-            <h:column headerClass="columnHeader">
-                <h:commandButton actionListener="#{newsManagedBean.deleteNews(news)}" value="Delete"/>
-            </h:column>
-        </h:dataTable>
-        <br/><br/>
-        <h:inputTextarea value="#{newsManagedBean.generatedContent}" cols="70" rows="7"/>
-        <br/>
-        <h:commandButton actionListener="#{newsManagedBean.generateNews()}" value="Generate"/>
-        <br/><br/>
-        <h:commandButton actionListener="#{newsManagedBean.clearDB()}" value="Clear database"/>
-        <br/><br/>
-        <h:button outcome="/VKauth.xhtml" value="VK Auth"/>
-        <h:commandButton actionListener="#{newsManagedBean.updateVkFeed()}" value="Update VK"/>
-        <br/>
-        <h:commandButton actionListener="#{newsManagedBean.getFriends()}" value="Get friends"/>
+        <table border="1">
+            <tbody>
+            <tr>
+                <td>
+                    <h:dataTable value="#{newsManagedBean.news}" var="news" border="1">
+                        <h:column headerClass="columnHeader">
+                            <f:facet name="header"> ID</f:facet>
+                            #{news.id}
+                        </h:column>
+                        <h:column headerClass="columnHeader">
+                            <f:facet name="header"> Content</f:facet>
+                            #{newsManagedBean.showContent(news)}
+                        </h:column>
+                        <h:column headerClass="columnHeader">
+                            <f:facet name="header"> Date</f:facet>
+                            #{news.date}
+                        </h:column>
+                        <h:column headerClass="columnHeader">
+                            <f:facet name="header"> Source</f:facet>
+                            #{news.source}
+                        </h:column>
+                        <h:column headerClass="columnHeader">
+                            <f:facet name="header"> Original</f:facet>
+                            <h:outputLink target="blank" value="#{news.url}"> Original post</h:outputLink>
+                        </h:column>
+                        <h:column headerClass="columnHeader">
+                            <f:facet name="header"> Status</f:facet>
+                            #{newsManagedBean.checkStatus(news)}
+                        </h:column>
+                        <h:column headerClass="columnHeader">
+                            <h:commandButton actionListener="#{newsManagedBean.showAll(news)}" value="More"/>
+                        </h:column>
+                        <h:column headerClass="columnHeader">
+                            <h:commandButton actionListener="#{newsManagedBean.deleteNews(news)}" value="Delete"/>
+                        </h:column>
+                    </h:dataTable>
+                    <br/><br/>
+                    <h:inputTextarea value="#{newsManagedBean.generatedContent}" cols="70" rows="7"/>
+                    <br/>
+                    <h:commandButton actionListener="#{newsManagedBean.generateNews()}" value="Generate"/>
+                    <br/><br/>
+                    <h:commandButton actionListener="#{newsManagedBean.clearDB()}" value="Clear database"/>
+                    <br/><br/>
+                    <h:button outcome="/VKauth.xhtml" value="VK Auth"/>
+                    <h:commandButton actionListener="#{newsManagedBean.updateVkFeed()}" value="Update VK"/>
+                    <br/>
+                    <h:commandButton actionListener="#{newsManagedBean.getFriends()}" value="Get friends"/>
+                </td>
+                <td>
+                    <f:view>
+                        <h:form>
+                            <h1>
+                                <h:outputText value="List"/>
+                            </h1>
+                            <h:dataTable value="#{newsManagedBean.news}" var="item">
+                                <h:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Id"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.id}"/>
+                                </h:column>
+                                <h:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Source"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.source}"/>
+                                </h:column>
+                                <h:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Status"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.status}"/>
+                                </h:column>
+                                <h:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Date"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.date}"/>
+                                </h:column>
+                                <h:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Url"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.url}"/>
+                                </h:column>
+                                <h:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Content"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.content}"/>
+                                </h:column>
+                            </h:dataTable>
+                        </h:form>
+                    </f:view>
+
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </h:form>
 </h:body>
 </html>
