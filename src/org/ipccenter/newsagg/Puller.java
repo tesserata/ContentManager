@@ -1,8 +1,8 @@
 package org.ipccenter.newsagg;
 
-import java.io.IOException;
-import java.util.Date;
+import org.ipccenter.newsagg.gson.FeedItem;
 
+import java.io.IOException;
 
 
 /**
@@ -15,10 +15,10 @@ import java.util.Date;
 public interface Puller {
     enum KEYWORDS {ФРТК, МФТИ, Физтех, РТ, паяльник, радио}
 
-    long getLastUpdateTime();
-
     void checkFeed() throws IOException;
+
     void findPosts() throws IOException;
-    //void parsePost(Object item); //make new DB element, set up all the fields by parsing html(?)
+
+    void parsePost(FeedItem feedItem);
 
 }

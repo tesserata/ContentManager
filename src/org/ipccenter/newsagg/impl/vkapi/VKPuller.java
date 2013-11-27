@@ -3,6 +3,7 @@ package org.ipccenter.newsagg.impl.vkapi;
 import com.google.gson.Gson;
 import org.ipccenter.newsagg.Puller;
 import org.ipccenter.newsagg.entity.News;
+import org.ipccenter.newsagg.gson.Feed;
 import org.ipccenter.newsagg.gson.FeedItem;
 import org.ipccenter.newsagg.gson.Response;
 import org.slf4j.Logger;
@@ -12,7 +13,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -27,15 +27,7 @@ public class VKPuller implements Puller {
     private static final Logger LOG = LoggerFactory.getLogger(VKPuller.class);
 
     private List<News> postsList = new ArrayList<News>();
-    private Date lastUpdate = new Date();
-
-    public static void main(String[] args) throws IOException {
-        VKAuth auth = new VKAuth("db1ba44f79a8dcc86e00d9b96a24d3ec2fb971ddc4aa74b377aa9bf3c0dba23aa679a9a792d82e801a31c", "11508656");
-        VKMethod getFriends = new VKMethod("newsfeed.get", auth);
-//        getFriends.addParam("uid", auth.getUserID());
-        String friends = getFriends.execute();
-        LOG.info("Friends: {}", friends);
-    }
+    private int offset = 0;
 
     public VKPuller(VKAuth auth) {
         this.auth = auth;
@@ -45,8 +37,8 @@ public class VKPuller implements Puller {
         return postsList;
     }
 
-    public long getLastUpdateTime() {
-        return lastUpdate.getTime();
+    public int getOffset() {
+        return offset;
     }
 
     public void getFriends() throws IOException, NoSuchAlgorithmException {
@@ -59,45 +51,47 @@ public class VKPuller implements Puller {
     public void checkFeed() throws IOException {
         VKMethod getFeed = new VKMethod("newsfeed.get", auth);
         String filters = "post,note";
-        String startTime = String.valueOf(getLastUpdateTime() - 12 * 60 * 60 * 100);
+        //String startTime = String.valueOf(getLastUpdateTime() - 12 * 60 * 60 * 100);
         getFeed.addParam("filters", filters)
-                .addParam("return_banned", "1");
+                .addParam("return_banned", "0")
+                .addParam("count", "10")
+                .addParam("offset", String.valueOf(offset));
         // .addParam("start_time", startTime);
         LOG.info("Search method params: {}", getFeed.getParams());
-        String feed = getFeed.execute();
-        LOG.info("Response in plain text: {}", feed);
+        String rawFeed = getFeed.execute();
+        LOG.info("Response in plain text: {}", rawFeed);
         Gson gson = new Gson();
-        Response feedResponse = gson.fromJson(feed, Response.class);
+        Response feedResponse = gson.fromJson(rawFeed, Response.class);
         LOG.info("Responce: {}", feedResponse);
         if (feedResponse.getError() != null) {
             LOG.warn("Cannot get response. Error message is: {}", feedResponse.getError().getErrorMessage());
             throw new IllegalArgumentException(feedResponse.getError().getErrorMessage());
         }
-        FeedItem[] feedList = feedResponse.getResponse();
-        LOG.info("News amount: {}", feedList.length);
-        for (FeedItem feedItem : feedList) {
-            parsePost(feedItem);
+        Feed feedList = feedResponse.getResponse();
+        offset = feedList.getNewOffset();
+        LOG.info("Feedlist: {}", feedList);
+        FeedItem[] feedItem = gson.fromJson(gson.toJson(feedList), Feed.class).getItems();
+        LOG.info("Feeditems: {}", feedItem);
+        for (FeedItem item : feedItem) {
+            parsePost(item);
         }
+
     }
 
     public void findPosts() throws IOException {
         VKMethod searchFeed = new VKMethod("newsfeed.search", auth);
         List<String> requests = Arrays.asList(KEYWORDS.values().toString());
-        String count = "100";
-        String startTime = String.valueOf(getLastUpdateTime());
+        String count = "50";
         for (String request : requests) {
-            searchFeed.addParam("q", request).addParam("count", count).addParam("start_time", startTime);
-            String feed = null;
-            feed = searchFeed.execute();
+            searchFeed.addParam("q", request).addParam("count", count).addParam("offset", String.valueOf(offset));
+            String feed = searchFeed.execute();
             Gson gson = new Gson();
             Response searchFeedResponse = gson.fromJson(feed, Response.class);
             if (searchFeedResponse.getError() != null) {
                 throw new IllegalArgumentException(searchFeedResponse.getError().getErrorMessage());
             }
-            FeedItem[] feedList = searchFeedResponse.getResponse();
-            for (FeedItem feedItem : feedList) {
-                parsePost(feedItem);
-            }
+            Feed feedList = searchFeedResponse.getResponse();
+            FeedItem[] feedItem = gson.fromJson(gson.toJson(feedList), Feed.class).getItems();
         }
 
     }
@@ -108,9 +102,9 @@ public class VKPuller implements Puller {
         post.setContent(feedItem.getText());
         post.setDate(feedItem.getDate());
         if (feedItem.isCopy()) {
-            post.setUrl("vk.com/" + feedItem.getCopyPostAddress());
+            post.setUrl("http://vk.com/" + feedItem.getCopyPostAddress());
         } else {
-            post.setUrl("vk.com/" + feedItem.getPostAddress());
+            post.setUrl("http://vk.com/" + feedItem.getPostAddress());
         }
         post.setStatus(0);
         postsList.add(post);
