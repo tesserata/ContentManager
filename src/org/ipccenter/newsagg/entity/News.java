@@ -8,7 +8,6 @@ package org.ipccenter.newsagg.entity; /**
 
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.Date;
@@ -20,9 +19,8 @@ public class News implements Serializable {
     @Id
     @Column(name = "ID", unique = true)
     @TableGenerator(name = "newsid", table = "newspktb", pkColumnName = "idNews", pkColumnValue = "idNewsValue")
-    @GeneratedValue(strategy = GenerationType.TABLE, generator = "newsid")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "newsid")
     private Integer id;
-    @Size(max = 150)
 
 
     @Column(name = "SOURCE")
@@ -32,7 +30,6 @@ public class News implements Serializable {
     private int status;    // -1 = ignored; 0 = new; 1 = posted
 
     @Column(name = "DATE")
-    //@Temporal(javax.persistence.TemporalType.DATE)
     private String date;
 
     @Column(name = "URL")
