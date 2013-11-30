@@ -1,6 +1,6 @@
 package org.ipccenter.newsagg;
 
-import org.ipccenter.newsagg.gson.FeedItem;
+import twitter4j.TwitterException;
 
 import java.io.IOException;
 
@@ -17,8 +17,6 @@ public interface Puller {
 
     void checkFeed() throws IOException;
 
-    void findPosts() throws IOException;
-
-    void parsePost(FeedItem feedItem);
+    void findPosts() throws IOException, TwitterException;
 
 }
