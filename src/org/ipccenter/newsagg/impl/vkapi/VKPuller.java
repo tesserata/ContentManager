@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -80,7 +79,11 @@ public class VKPuller implements Puller {
 
     public void findPosts() throws IOException {
         VKMethod searchFeed = new VKMethod("newsfeed.search", auth);
-        List<String> requests = Arrays.asList(KEYWORDS.values().toString());
+        List<String> requests = new ArrayList<String>();
+        requests.add("ФРТК");
+        requests.add("МФТИ");
+        requests.add("Физтех");
+        requests.add("РТ");
         String count = "50";
         for (String request : requests) {
             searchFeed.addParam("q", request).addParam("count", count).addParam("offset", String.valueOf(offset));
@@ -98,7 +101,7 @@ public class VKPuller implements Puller {
 
     public void parsePost(FeedItem feedItem) {
         News post = new News();
-        post.setSource("vkontakte");
+        post.setSource("vk.com");
         post.setContent(feedItem.getText());
         post.setDate(feedItem.getDate());
         if (feedItem.isCopy()) {
@@ -107,6 +110,7 @@ public class VKPuller implements Puller {
             post.setUrl("http://vk.com/" + feedItem.getPostAddress());
         }
         post.setStatus(0);
+        //post.setAuthor("");
         postsList.add(post);
     }
 
