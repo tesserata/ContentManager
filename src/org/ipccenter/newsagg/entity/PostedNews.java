@@ -11,6 +11,7 @@ package org.ipccenter.newsagg.entity;
  * @author darya
  */
 
+import java.io.Serializable;
 import javax.persistence.*;
 import java.text.DateFormat;
 import java.util.Date;
@@ -18,7 +19,7 @@ import java.util.Date;
 @Entity
 @Table(name = "PostedNews")
 
-public class PostedNews {
+public class PostedNews implements Serializable{
 
     @Id
     @Column(name = "ID", unique = true)
