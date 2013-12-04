@@ -25,6 +25,7 @@ import javax.faces.bean.SessionScoped;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import org.ipccenter.newsagg.impl.twitterapi.TwitterPusher;
 
 /**
  * @author darya
@@ -47,9 +48,8 @@ public class NewsManagedBean {
     private String vkAccessToken;
     private String userID;
     private Twitter twitter;
-    private String twitterSecret;
-
-
+    //private TwitterPusher twitterPusher;
+    
     public News displayedNews;
 
     static {
@@ -64,6 +64,8 @@ public class NewsManagedBean {
      */
     public NewsManagedBean() throws TwitterException {
         this.twitter = new TwitterFactory().getInstance();
+        this.twitter.setOAuthConsumer("X6CTYpAt53aq71iBtTEMQ", "ApTAXimRwQ0361gc8aCDhqZAKcnXFTgwigrN445opI");
+        buildTwiAuthUrl();
     }
 
     public String getVkAuthURL() {
@@ -126,6 +128,10 @@ public class NewsManagedBean {
     }
 
     public String checkStatus(News news) {
+        LOG.info("News: {}", news);
+        if(news == null) {
+            return null;
+        }
         switch (news.getStatus()) {
             case (0):
                 return "New";
@@ -158,7 +164,9 @@ public class NewsManagedBean {
     }
 
     public void chooseDisplayedNews(News displayedNews) {
+        LOG.info("Selected news status: {}", checkStatus(displayedNews));
         this.displayedNews = displayedNews;
+        LOG.info("Displayed news status: {}", checkStatus(this.displayedNews));
     }
 
     public News getDisplayedNews() {
@@ -175,10 +183,7 @@ public class NewsManagedBean {
     }
 
     public void buildTwiAuthUrl() throws TwitterException {
-        twitter.setOAuthConsumer("X6CTYpAt53aq71iBtTEMQ", twitterSecret);
         RequestToken rt = twitter.getOAuthRequestToken();
-        LOG.info("Got request token: {}", rt.getToken());
-        LOG.info("Got request secret: {}", rt.getTokenSecret());
         twiAuthUrl = rt.getAuthorizationURL();
     }
 
@@ -195,7 +200,6 @@ public class NewsManagedBean {
 
 
     public String toAuthVK() {
-        LOG.info("Set access token to {}", this.vkAccessToken);
         this.vkauth.setAccessToken(this.vkAccessToken);
         this.vkauth.setUserID(this.userID);
         return "showNews";
@@ -203,8 +207,26 @@ public class NewsManagedBean {
 
     public String toAuthTwi() throws TwitterException {
         twitter.getOAuthAccessToken(this.twiPIN);
+        //twitterPusher = new TwitterPusher(twitter);
         return "showNews";
     }
+    
+    /*public String getTwiToken() throws TwitterException {
+        try {
+//            StringBuffer callbackURL = request.getRequestURL();
+//            int index = callbackURL.lastIndexOf("/");
+//            callbackURL.replace(index, callbackURL.length(), "").append("/catch_auth.jsp");
+            String callbackURL = "http://localhost:8080/NewsAggregator/faces/catch_auth.jsp";
+
+            RequestToken requestToken = twitter.getOAuthRequestToken(callbackURL.toString());
+//            request.getSession().setAttribute("requestToken", requestToken);
+//            response.sendRedirect(requestToken.getAuthenticationURL());
+            LOG.info("Request token URL: {}", requestToken.getAuthenticationURL());
+            return requestToken.getAuthenticationURL();
+        } catch (TwitterException e) {
+            throw e;
+        }
+    }*/
 
     public void setVkAccessToken(String accessToken) {
         LOG.info("Call setVkAccessToken({})", accessToken);
@@ -221,14 +243,6 @@ public class NewsManagedBean {
 
     public String getTwiPIN() {
         return this.twiPIN;
-    }
-
-    public String getTwitterSecret() {
-        return twitterSecret;
-    }
-
-    public void setTwitterSecret(String twitterSecret) {
-        this.twitterSecret = twitterSecret;
     }
 
     public void setUserID(String userID) {
@@ -264,5 +278,17 @@ public class NewsManagedBean {
         for (News news : pull.getPostsList()) {
             ejbNews.persist(news);
         }
+    }
+    
+    public void retweet() throws TwitterException{
+        LOG.info("Retweet method called");
+        TwitterPusher push = new TwitterPusher(twitter);
+        push.retweet(displayedNews);
+    }
+    
+    public void toFav() throws TwitterException{
+        LOG.info("toFav method called");
+        TwitterPusher push = new TwitterPusher(twitter);
+        push.toFav(displayedNews);
     }
 }
