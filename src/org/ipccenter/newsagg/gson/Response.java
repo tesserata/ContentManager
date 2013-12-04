@@ -11,10 +11,15 @@ package org.ipccenter.newsagg.gson;
 public class Response {
 
     private Feed response;
+    private SearchFeed searchResponse;
     private Error error;
 
     public Feed getResponse() {
         return response;
+    }
+    
+    public SearchFeed getSearchResponse(){
+        return searchResponse;
     }
 
     public Error getError() {
