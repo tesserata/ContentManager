@@ -14,12 +14,12 @@ import java.util.Date;
 
 @Entity
 @Table(name = "NEWS")
+@SequenceGenerator(name="seq", initialValue=1, allocationSize=1000)
 
 public class News implements Serializable {
     @Id
     @Column(name = "ID", unique = true)
-    @TableGenerator(name = "newsid", table = "newspktb", pkColumnName = "idNews", pkColumnValue = "idNewsValue")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "newsid")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="seq")
     private Integer id;
 
 
