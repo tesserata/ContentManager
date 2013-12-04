@@ -41,7 +41,6 @@ public class TwitterPuller implements Puller {
         requests.add("ФРТК");
         requests.add("МФТИ");
         requests.add("Физтех");
-        requests.add("РТ");
         for (String request : requests) {
             q.query(request.toString());
             LOG.info("New query: {}", q.getQuery());
