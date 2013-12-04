@@ -1,97 +1,157 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-<h:head>
-    <title>All news</title>
-</h:head>
-<h:body><br/>
-    News count:
-    <h:outputText value="#{newsManagedBean.newsCount}"/>
-    <br/><br/>
-    <h:button value="Posted news" outcome="/postedNews.xhtml"/>
-    <h:button value="New news" outcome="/newNews.xhtml"/>
-    <h:button value="Ignored news" outcome="/ignoredNews.xhtml"/>
-    <br/><br/>
-    <h:form>
-        <table border="1">
-            <tbody>
-            <tr>
-                <td>
-                    <div style="width:800px;height:300px;overflow:auto;">
-                        <h:dataTable value="#{newsManagedBean.news}" var="news" border="1">
-                            <h:column headerClass="columnHeader">
-                                <f:facet name="header"> ID</f:facet>
-                                #{news.id}
-                            </h:column>
-                            <h:column headerClass="columnHeader">
-                                <f:facet name="header"> Content</f:facet>
-                                #{newsManagedBean.showContent(news)}
-                            </h:column>
-                            <h:column headerClass="columnHeader">
-                                <f:facet name="header"> Date</f:facet>
-                                #{news.date}
-                            </h:column>
-                            <h:column headerClass="columnHeader">
-                                <f:facet name="header"> Source</f:facet>
-                                #{news.source}
-                            </h:column>
-                            <h:column headerClass="columnHeader">
-                                <f:facet name="header"> Original</f:facet>
-                                <h:outputLink target="blank" value="#{news.url}"> Original post</h:outputLink>
-                            </h:column>
-                            <h:column headerClass="columnHeader">
-                                <f:facet name="header"> Status</f:facet>
-                                #{newsManagedBean.checkStatus(news)}
-                            </h:column>
-                            <h:column headerClass="columnHeader">
-                                <h:commandButton actionListener="#{newsManagedBean.chooseDisplayedNews(news)}"
-                                                 value="More"/>
-                            </h:column>
-                            <h:column headerClass="columnHeader">
-                                <h:commandButton actionListener="#{newsManagedBean.deleteNews(news)}" value="Delete"/>
-                            </h:column>
-                        </h:dataTable>
-                    </div>
-                    <br/><br/>
+    <h:head>
+        <title>All news</title>
+        <style>
+            p
+            {
+                font-family: "Open Sans",Verdana,Tahoma,sans-serif;
+            }
+            #news
+            {
+                font-family:"Open Sans",Verdana,Tahoma,sans-serif;
+                font-size: 13px;
+                width:100%;
+                border-collapse:collapse;
+            }
+            #news td, #customers th 
+            {
+                font-size:1em;
+                border:1px solid #B40404;
+                padding:3px 7px 2px 7px;
+            }
+            #news th 
+            {
+                font-size:1.1em;
+                font-family:Verdana;
+                font-weight:sans-serif;
+                text-align:center;
+                padding-top:5px;
+                padding-bottom:4px;
+                background-color:#B40404;
+                color:#ffffff;
+            }
+            #news tr.alt td 
+            {
+                color:#000000;
+                background-color:#FBF2EF;
+            }
 
-                    <h:inputTextarea value="#{newsManagedBean.generatedContent}" cols="70" rows="7"/>
-                    <br/>
-                    <h:commandButton actionListener="#{newsManagedBean.generateNews()}" value="Generate"/>
-                    <br/><br/>
-                    <h:commandButton actionListener="#{newsManagedBean.clearDB()}" value="Clear database"/>
-                    <br/><br/>
-                    <h:button outcome="/VKauth.xhtml" value="VK Auth"/>
-                    <h:commandButton actionListener="#{newsManagedBean.updateVkFeed()}" value="Update VK"/>
-                    <br/>
-                    <h:button outcome="/TwitterAuth.xhtml" value="Twitter Auth"/>
-                    <h:commandButton actionListener="#{newsManagedBean.updateTwitter()}" value="Update Twitter"/>
-                    <br/><br/>
-                    <h:commandButton actionListener="#{newsManagedBean.twitterTest()}" value="Twitter test"/>
-                </td>
-                <td>
-                    <h:column headerClass="columnHeader">
-                        <f:facet name="header"> Current News</f:facet>
-                        <b>Posted by </b> in
-                        <h:outputText value="#{newsManagedBean.displayedNews.source}"/>
-                        <br/>
-                        <b>Date: </b>
-                        <h:outputText value="#{newsManagedBean.displayedNews.date}"/>
-                        <br/><br/>
-                        <b> Text: </b>
-                        <h:outputText value="#{newsManagedBean.displayedNews.content}"/>
-                        <br/><br/>
-                        <i>This post is
-                            <h:outputText value="#{newsManagedBean.checkStatus(newsManadegBean.displayedNews)}"/>
-                        </i>
-                    </h:column>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </h:form>
-</h:body>
+            ul
+            {
+                list-style-type:none;
+                margin:0;
+                padding:0;
+                overflow:hidden;
+            }
+            li
+            {
+                float:left;
+            }
+            a:link,a:visited
+            {
+                display:block;
+                width:200px;
+                font-family:Verdana;
+                font-weight:serif;
+                color:#FFFFFF;
+                background-color:#B40404;
+                text-align:center;
+                padding:4px;
+                text-decoration:none;
+                text-transform:uppercase;
+            }
+            a:hover,a:active
+            {
+                background-color:#DF0101;
+            }
+            .button{
+                background-color:#B40404;
+                border:1px solid #c40000;
+                display:inline-block;
+                cursor:pointer;
+                color:#ffffff;
+                font-family:Verdana;
+                font-size:12px;
+                font-weight:serif;
+                padding:6px 12px;
+                text-decoration:none; 
+            }
+            .button:active, .button:hover{
+                background-color:#DF0101;
+            }
+        </style>
+    </h:head>
+    <h:body>
+        <ul>
+            <li><a href="/NewsAggregator/faces/postedNews.xhtml"> Posted news</a></li>
+            <li><a href="/NewsAggregator/faces/newNews.xhtml">New news</a></li>
+            <li><a href="/NewsAggregator/faces/ignoredNews.xhtml">Ignored news</a></li>
+        </ul>
+        <h:form>
+            <table border="1" width="800px" id="news">
+                <tbody>
+                    <tr>
+                        <td>
+                            <div style="width:100%;height:315px;overflow:auto;">
+                                <h:dataTable value="#{newsManagedBean.news}" var="news" border="1">
+                                    <h:column headerClass="columnHeader">
+                                        <f:facet name="header"> ID</f:facet>
+                                            #{news.id}
+                                    </h:column>
+                                    <h:column headerClass="columnHeader">
+                                        <f:facet name="header"> Content</f:facet>
+                                            #{newsManagedBean.showContent(news)}
+                                    </h:column>
+                                    <h:column headerClass="columnHeader">
+                                        <f:facet name="header"> Date</f:facet>
+                                            #{news.date}
+                                    </h:column>
+                                    <h:column headerClass="columnHeader">
+                                        <f:facet name="header"> Source</f:facet>
+                                            #{news.source}
+                                    </h:column>
+                                    <h:column headerClass="columnHeader">
+                                        <f:facet name="header"> Original</f:facet>
+                                        <h:outputLink target="blank" value="#{news.url}"> Original post</h:outputLink>
+                                    </h:column>
+                                    <h:column headerClass="columnHeader">
+                                        <f:facet name="header"> Status</f:facet>
+                                            #{newsManagedBean.checkStatus(news)}
+                                    </h:column>
+                                    <h:column headerClass="columnHeader">
+                                        <h:commandButton actionListener="#{newsManagedBean.chooseDisplayedNews(news)}"
+                                                         value="More" action="/display.xhtml" styleClass="button" />
+                                    </h:column>
+                                    <h:column headerClass="columnHeader">
+                                        <h:commandButton actionListener="#{newsManagedBean.deleteNews(news)}" value="Delete" styleClass="button"/>
+                                    </h:column>
+                                </h:dataTable>
+                            </div>
+                            <ul>
+                                <h:inputTextarea value="#{newsManagedBean.generatedContent}" cols="70" rows="6"/>
+                                <br/>
+                                <h:commandButton actionListener="#{newsManagedBean.generateNews()}" value="Generate" styleClass="button"/>
+                                <h:commandButton actionListener="#{newsManagedBean.clearDB()}" value="Clear database" styleClass="button"/>
+                                <br/><br/>
+                                <h:button outcome="/VKauth.xhtml" value="VK Auth" styleClass="button" style="width: 170px;"/>
+                                <h:commandButton actionListener="#{newsManagedBean.updateVkFeed()}" value="Update VK" styleClass="button" style="width: 170px;"/>
+                                <br/>
+                                <h:button outcome="/TwitterAuth.xhtml" value="Twitter Auth" styleClass="button" style="width: 170px;"/>
+                                <h:commandButton actionListener="#{newsManagedBean.updateTwitter()}" value="Update Twitter" styleClass="button" style="width: 170px;"/>
+                                <br/>
+                                <h:commandButton actionListener="#{newsManagedBean.twitterTest()}" value="Twitter test"/>
+                            </ul>
+                        </td>
+                        
+                    </tr>
+                </tbody>
+            </table>
+        </h:form>
+    </h:body>
 </html>
 
