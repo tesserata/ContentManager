@@ -9,9 +9,6 @@
 <h:body>
     <h:form>
         <br/>
-        <h:inputText value="#{newsManagedBean.twitterSecret}"/>
-        <h:commandButton action="#{newsManagedBean.buildTwiAuthUrl()}" value="OK"/>
-        <br/><br/>
         <h:outputLink value="#{newsManagedBean.twiAuthUrl}" target="blank"> Get PIN</h:outputLink>
         <br/>
         <b>PIN: </b>
