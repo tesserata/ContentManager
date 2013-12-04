@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import org.ipccenter.newsagg.gson.SearchFeed;
 
 /**
  * Created with IntelliJ IDEA. User: darya Date: 28.10.13 Time: 22:30 To change
@@ -55,7 +56,6 @@ public class VKPuller implements Puller {
                 .addParam("return_banned", "0")
                 .addParam("count", "10")
                 .addParam("offset", String.valueOf(offset));
-        // .addParam("start_time", startTime);
         LOG.info("Search method params: {}", getFeed.getParams());
         String rawFeed = getFeed.execute();
         LOG.info("Response in plain text: {}", rawFeed);
@@ -78,23 +78,28 @@ public class VKPuller implements Puller {
     }
 
     public void findPosts() throws IOException {
-        VKMethod searchFeed = new VKMethod("newsfeed.search", auth);
         List<String> requests = new ArrayList<String>();
         requests.add("ФРТК");
         requests.add("МФТИ");
         requests.add("Физтех");
         requests.add("РТ");
-        String count = "50";
-        for (String request : requests) {
-            searchFeed.addParam("q", request).addParam("count", count).addParam("offset", String.valueOf(offset));
+        String count = "10";
+        for (String request : requests) {          
+            VKMethod searchFeed = new VKMethod("newsfeed.search", auth);
+            String filters = "post,note";
+            searchFeed.addParam("filters", filters).addParam("q", request).addParam("count", count).addParam("offset", String.valueOf(offset));
             String feed = searchFeed.execute();
+            LOG.info("Response in plain text: {}", feed);
             Gson gson = new Gson();
             Response searchFeedResponse = gson.fromJson(feed, Response.class);
             if (searchFeedResponse.getError() != null) {
                 throw new IllegalArgumentException(searchFeedResponse.getError().getErrorMessage());
             }
-            Feed feedList = searchFeedResponse.getResponse();
+            SearchFeed feedList = searchFeedResponse.getSearchResponse();
             FeedItem[] feedItem = gson.fromJson(gson.toJson(feedList), Feed.class).getItems();
+            for (FeedItem item : feedItem) {
+                parsePost(item);
+            }
         }
 
     }
