@@ -23,9 +23,9 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import org.ipccenter.newsagg.impl.twitterapi.TwitterPusher;
+import org.ipccenter.newsagg.impl.vkapi.VKPusher;
 
 /**
  * @author darya
@@ -33,8 +33,6 @@ import org.ipccenter.newsagg.impl.twitterapi.TwitterPusher;
 @ManagedBean
 @SessionScoped
 public class NewsManagedBean {
-
-    private String generatedContent;
 
     private static final Logger LOG = LoggerFactory.getLogger(NewsManagedBean.class);
     @EJB
@@ -48,9 +46,10 @@ public class NewsManagedBean {
     private String vkAccessToken;
     private String userID;
     private Twitter twitter;
-    //private TwitterPusher twitterPusher;
     
     public News displayedNews;
+    private String postedContent;
+    private String vkDestination;
 
     static {
         statuses = new LinkedHashMap<Integer, String>();
@@ -81,14 +80,6 @@ public class NewsManagedBean {
         return statuses.values();
     }
 
-    public void setGeneratedContent(String generatedContent) {
-        this.generatedContent = generatedContent;
-    }
-
-    public String getGeneratedContent() {
-        return generatedContent;
-    }
-
     public List<News> getNews() {
         return ejbNews.getAllNews();
     }
@@ -107,14 +98,32 @@ public class NewsManagedBean {
 
     public void generateNews() {
         Date date = new Date();
-        News news = new News(generatedContent, "", "Editor", date);
+        News news = new News(postedContent, "", "Editor", date);
+        changeStatus(news, "Posted");
         ejbNews.persist(news);
     }
 
     public int getNewsCount() {
         return ejbNews.getAllNews().size();
     }
+    
+    public String getPostedContent() {
+        return postedContent;
+    }
 
+    public void setPostedContent(String postedContent) {
+        this.postedContent = postedContent;
+    }
+    
+    public String getVkDestination() {
+        return vkDestination;
+    }
+
+    public void setVkDestination(String vkDestination) {
+        this.vkDestination = vkDestination;
+    }
+    
+    
     public int getPostedNewsCount() {
         return ejbNews.getPostedNews().size();
     }
@@ -150,7 +159,12 @@ public class NewsManagedBean {
         if (status.equalsIgnoreCase("Ignored")) news.setStatus(-1);
         news = ejbNews.merge(news);
     }
-
+    
+    public String toIgnore(){
+        changeStatus(displayedNews, "Ignored");
+        return "showNews";
+    }
+    
     public void clearDB() {
         ejbNews.clearDataBase();
     }
@@ -192,7 +206,7 @@ public class NewsManagedBean {
         sb.append("http://oauth.vk.com/oauth/authorize?");
         sb.append("client_id").append("=").append("4017304").append("&");
         sb.append("redirect_uri").append("=").append(StringEscapeUtils.escapeHtml4("http://oauth.vk.com/blank.html")).append("&");
-        sb.append("scope").append("=").append("wall,friends").append("&");
+        sb.append("scope").append("=").append("wall,friends,messages").append("&");
         sb.append("display").append("=").append("page").append("&");
         sb.append("response_type").append("=").append("token");
         return sb.toString();
@@ -207,7 +221,6 @@ public class NewsManagedBean {
 
     public String toAuthTwi() throws TwitterException {
         twitter.getOAuthAccessToken(this.twiPIN);
-        //twitterPusher = new TwitterPusher(twitter);
         return "showNews";
     }
     
@@ -256,16 +269,11 @@ public class NewsManagedBean {
         return userID;
     }
 
-    public void getFriends() throws IOException, NoSuchAlgorithmException {
-        VKPuller vk = new VKPuller(vkauth);
-        vk.getFriends();
-    }
-
     public void updateVkFeed() throws IOException {
         LOG.info("Access token before requesting news: {}", vkauth.getAccessToken());
         VKPuller vk = new VKPuller(vkauth);
         vk.checkFeed();
-        vk.findPosts();
+        //vk.findPosts();
         for (News news : vk.getPostsList()) {
             ejbNews.persist(news);
         }
@@ -290,5 +298,38 @@ public class NewsManagedBean {
         LOG.info("toFav method called");
         TwitterPusher push = new TwitterPusher(twitter);
         push.toFav(displayedNews);
+    }
+    
+    public void twitterPostNew() throws TwitterException{
+        TwitterPusher push = new TwitterPusher(twitter);
+        LOG.info("Text: {}", postedContent);
+        push.post(postedContent);
+        generateNews();
+        postedContent = null;
+    }
+    
+    public void twitterPostCurrent() throws TwitterException{
+        TwitterPusher push = new TwitterPusher(twitter);
+        push.postNews(displayedNews);
+    }
+    
+    public void vkPostNew() throws IOException{
+        VKPusher push = new VKPusher(vkauth);
+        push.postNew(postedContent, vkDestination);
+        generateNews();
+        postedContent = null;
+    }
+    
+    public void vkPostCurrent() throws IOException{
+        VKPusher push = new VKPusher(vkauth);
+        push.postCurrent(displayedNews, vkDestination);
+        changeStatus(displayedNews, "Posted");
+    }
+    
+    public void vkRepost() throws IOException{
+        VKPusher push = new VKPusher(vkauth);
+        push.repost(displayedNews, vkDestination);
+        vkDestination = null;
+        changeStatus(displayedNews, "Posted");
     }
 }
