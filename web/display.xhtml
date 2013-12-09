@@ -25,7 +25,7 @@
             #news th 
             {
                 font-size:1.1em;
-                font-family:Micra;
+                font-family:Verdana;
                 font-weight:sans-serif;
                 text-align:center;
                 padding-top:5px;
@@ -54,14 +54,13 @@
             {
                 display:block;
                 width:200px;
-                font-family:"Micra";
+                font-family:Verdana;
                 font-weight:serif;
                 color:#FFFFFF;
                 background-color:#B40404;
                 text-align:center;
                 padding:4px;
                 text-decoration:none;
-                text-transform:uppercase;
             }
             a:hover,a:active
             {
@@ -73,7 +72,7 @@
                 display:inline-block;
                 cursor:pointer;
                 color:#ffffff;
-                font-family:Micra;
+                font-family:Verdana;
                 font-size:12px;
                 font-weight:serif;
                 padding:6px 12px;
@@ -85,6 +84,7 @@
         </style>
     </h:head>
     <h:body>
+        <h:form>
         <table border="1" width="700px" id="news">
             <tbody>
                 <tr>
@@ -106,16 +106,30 @@
                         </h:column>
                     </td>
                     <td width="200px">
-                        <h:commandButton action="/twitterPost.xhtml" styleClass="button" value="Post to Twitter" style="width: 180px;"/><br/>
+                        <h:commandButton action="#{newsManagedBean.twitterPostCurrent()}" styleClass="button" value="Post in Twitter" style="width: 180px;"/><br/>
                         <h:commandButton action="#{newsManagedBean.retweet()}" value="Retweet" styleClass="button" style="width: 180px;"/><br/>
                         <h:commandButton action="#{newsManagedBean.toFav()}" value="To Favorite" styleClass="button" style="width: 180px"/><br/>
                         <br/>
+                        <br/>
+                        <h:selectOneMenu value="#{newsManagedBean.vkDestination}">
+                            <f:selectItem itemLabel="ФРТК МФТИ" itemValue="Main"/>
+                            <f:selectItem itemLabel="Студенты 1-го курса" itemValue="31x"/>
+                            <f:selectItem itemLabel="Студенты 2-го курса" itemValue="21x"/>
+                            <f:selectItem itemLabel="Студенты 3-го курса" itemValue="11x"/>
+                            <f:selectItem itemLabel="Студенты 4-го курса" itemValue="01x"/>
+                            <f:selectItem itemLabel="Информ. департамент" itemValue="minitrue"/>
+                        </h:selectOneMenu><br/>
+                        <h:commandButton action="#{newsManagedBean.vkRepost()}" styleClass="button" value="Repost" style="width: 180px;"/><br/>
+                        <h:commandButton action="#{newsManagedBean.vkPostCurrent()}" styleClass="button" value="Post" style="width: 180px;"/><br/>
+                        <br/><br/>
+                        <h:commandButton action="#{newsManagedBean.toIgnore()}" styleClass="button" value="Ignore" style="width: 180px;"/>
                     </td>
                 </tr>
             </tbody>
         </table>
         <br/>
         <h:button outcome="/showNews.xhtml" styleClass="button" value="Return"/>
+        </h:form>
     </h:body>
 </html>
 
