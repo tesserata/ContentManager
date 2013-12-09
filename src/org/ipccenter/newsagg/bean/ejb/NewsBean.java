@@ -27,7 +27,7 @@ public class NewsBean {
         EntityManager em = null;
         try {
             em = emf.createEntityManager();
-            return em.createQuery("select n from News n").getResultList();
+            return em.createQuery("select n from News n where n.status != -1").getResultList();
         } finally {
             if (em != null) {
                 em.close();
@@ -136,4 +136,5 @@ public class NewsBean {
             }
         }
     }
+    
 }
