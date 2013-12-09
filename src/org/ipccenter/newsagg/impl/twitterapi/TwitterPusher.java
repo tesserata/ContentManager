@@ -34,19 +34,22 @@ public class TwitterPusher {
         }
         String id = news.getUrl().substring(news.getUrl().lastIndexOf('/')+1).toString();
         Status status;
-        status = twitter.retweetStatus(Long.getLong(id));
+        status = twitter.retweetStatus(Long.valueOf(id));
     }
     
     public void toFav(News news) throws TwitterException{
         if (!news.getSource().equals("Twitter")) return;
         String id = news.getUrl().substring(news.getUrl().lastIndexOf('/')+1).toString();
         Status status;
-        LOG.info("Tweet ID: {}", id);
-        status = twitter.createFavorite(Long.getLong(id));
+        status = twitter.createFavorite(Long.valueOf(id));
     }
     
     public void post(String text) throws TwitterException{
         Status status = twitter.updateStatus(text);
+    }
+    
+    public void postNews(News news) throws TwitterException{
+        Status status = twitter.updateStatus(news.getContent());
     }
     
 }
