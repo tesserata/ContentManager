@@ -63,7 +63,6 @@
                 text-align:center;
                 padding:4px;
                 text-decoration:none;
-                text-transform:uppercase;
             }
             a:hover,a:active
             {
@@ -133,7 +132,7 @@
                                 </h:dataTable>
                             </div>
                             <ul>
-                                <h:inputTextarea value="#{newsManagedBean.generatedContent}" cols="70" rows="6"/>
+                                <h:inputTextarea value="#{newsManagedBean.postedContent}" cols="70" rows="6"/>
                                 <br/>
                                 <h:commandButton actionListener="#{newsManagedBean.generateNews()}" value="Generate" styleClass="button"/>
                                 <h:commandButton actionListener="#{newsManagedBean.clearDB()}" value="Clear database" styleClass="button"/>
@@ -144,7 +143,8 @@
                                 <h:button outcome="/TwitterAuth.xhtml" value="Twitter Auth" styleClass="button" style="width: 170px;"/>
                                 <h:commandButton actionListener="#{newsManagedBean.updateTwitter()}" value="Update Twitter" styleClass="button" style="width: 170px;"/>
                                 <br/>
-                                <h:commandButton actionListener="#{newsManagedBean.twitterTest()}" value="Twitter test"/>
+                                <h:commandButton action="/twitterPost.xhtml" styleClass="button" value="Post to Twitter" style="width: 170px;"/><br/>
+                                <h:commandButton action="/vkPost.xhtml" styleClass="button" value="Post in vk" style="width: 170px;"/><br/>
                             </ul>
                         </td>
                         
