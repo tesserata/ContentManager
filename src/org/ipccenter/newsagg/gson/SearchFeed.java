@@ -7,11 +7,12 @@ import org.apache.commons.lang3.tuple.Pair;
  * @author darya
  */
 public class SearchFeed {
-    private Pair<Integer, FeedItem[]> response;
+    private int items;
+    private SearchFeedItem[] response;
     private int new_offset;
 
-    public FeedItem[] getResponse() {
-        return response.getRight();
+    public SearchFeedItem[] getItems() {
+        return response;
     }
 
     public int getNewOffset() {

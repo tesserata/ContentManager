@@ -7,6 +7,7 @@
 package org.ipccenter.newsagg.gson;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,4 +27,21 @@ public class SearchFeedItem {
     @SerializedName("text")
     private String text;
 
+    
+    public Date getDate() {
+        Date d = new Date();
+        return d;
+    }
+
+    public String getPostID() {
+        return postID;
+    }
+
+    public StringBuilder getOwnerID() {
+        return ownerID;
+    }
+
+    public String getText() {
+        return text;
+    }
 }
