@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import org.ipccenter.newsagg.gson.SearchFeed;
+import org.ipccenter.newsagg.gson.SearchFeedItem;
 
 /**
  * Created with IntelliJ IDEA. User: darya Date: 28.10.13 Time: 22:30 To change
@@ -72,7 +73,7 @@ public class VKPuller implements Puller {
         FeedItem[] feedItem = gson.fromJson(gson.toJson(feedList), Feed.class).getItems();
         LOG.info("Feeditems: {}", feedItem);
         for (FeedItem item : feedItem) {
-            parsePost(item);
+            parsePost(item, null);
         }
 
     }
@@ -96,23 +97,29 @@ public class VKPuller implements Puller {
                 throw new IllegalArgumentException(searchFeedResponse.getError().getErrorMessage());
             }
             SearchFeed feedList = searchFeedResponse.getSearchResponse();
-            FeedItem[] feedItem = gson.fromJson(gson.toJson(feedList), Feed.class).getItems();
-            for (FeedItem item : feedItem) {
-                parsePost(item);
+            SearchFeedItem[] feedItem = gson.fromJson(gson.toJson(feedList), SearchFeed.class).getItems();
+            for (SearchFeedItem item : feedItem) {
+                parsePost(null, item);
             }
         }
 
     }
 
-    public void parsePost(FeedItem feedItem) {
+    public void parsePost(FeedItem feedItem, SearchFeedItem searchFeedItem) {
         News post = new News();
         post.setSource("vk.com");
-        post.setContent(feedItem.getText());
-        post.setDate(feedItem.getDate());
-        if (feedItem.isCopy()) {
-            post.setUrl("http://vk.com/" + feedItem.getCopyPostAddress());
-        } else {
-            post.setUrl("http://vk.com/" + feedItem.getPostAddress());
+        if (searchFeedItem == null){
+            post.setContent(feedItem.getText());
+            post.setDate(feedItem.getDate());
+            if (feedItem.isCopy()) {
+                post.setUrl("http://vk.com/" + feedItem.getCopyPostAddress());
+            } else {
+                post.setUrl("http://vk.com/" + feedItem.getPostAddress());
+            }
+        }
+        else{
+            post.setContent(searchFeedItem.getText());
+            post.setDate(searchFeedItem.getDate());
         }
         post.setStatus(0);
         //post.setAuthor("");
