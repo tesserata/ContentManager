@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//RU" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>VKPost</title>
+    </h:head>
+    <h:body>
+         <h:form>
+            <h:inputTextarea value="#{newsManagedBean.postedContent}" cols="70" rows="6"/>
+            <h:selectOneMenu value="#{newsManagedBean.vkDestination}">
+                            <f:selectItem itemLabel="ФРТК МФТИ" itemValue="Main"/>
+                            <f:selectItem itemLabel="Студенты 1-го курса" itemValue="31x"/>
+                            <f:selectItem itemLabel="Студенты 2-го курса" itemValue="21x"/>
+                            <f:selectItem itemLabel="Студенты 3-го курса" itemValue="11x"/>
+                            <f:selectItem itemLabel="Студенты 4-го курса" itemValue="01x"/>
+                            <f:selectItem itemLabel="Информ. департамент" itemValue="minitrue"/>
+                        </h:selectOneMenu><br/>
+            <h:commandButton actionListener="#{newsManagedBean.vkPostNew()}" value="Send"/>
+        </h:form>
+    </h:body>
+</html>
+
