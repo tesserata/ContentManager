@@ -7,7 +7,7 @@
 package org.ipccenter.newsagg.impl.twitterapi;
 
 
-import org.ipccenter.newsagg.Puller;
+import org.ipccenter.newsagg.interfaces.Puller;
 import org.ipccenter.newsagg.entity.News;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,19 +15,25 @@ import twitter4j.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
+import org.ipccenter.newsagg.bean.jsf.AuthorizationBean;
 
 /**
  * @author darya
  */
-public class TwitterPuller implements Puller {
+public class TwitterPuller{
 
+    @Inject
+    AuthorizationBean authorizationBean;
 
     public static final Logger LOG = LoggerFactory.getLogger(TwitterPuller.class);
+    
     private Twitter twitter;
     private List<News> postsList = new ArrayList<News>();
 
-    public TwitterPuller(Twitter twitter) {
-        this.twitter = twitter;
+    public TwitterPuller() {
+        LOG.info("TwiAuth: {}", authorizationBean.getTwiAuth());
+        this.twitter = authorizationBean.getTwiAuth();
     }
 
     public void findPosts() throws TwitterException {
@@ -53,11 +59,6 @@ public class TwitterPuller implements Puller {
         }
     }
 
-    public void checkFeed() {
-    }
-
-    ;
-
     public void parsePost(Status status) {
         News post = new News();
         post.setSource("Twitter");
@@ -76,11 +77,5 @@ public class TwitterPuller implements Puller {
 
     public List<News> getPostsList() {
         return postsList;
-    }
-
-
-    public void testPost() throws TwitterException {
-        Status status;
-        status = twitter.updateStatus("Если этот твит запощен, то мое приложение работает");
     }
 }
