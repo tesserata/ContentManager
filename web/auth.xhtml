@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Editor test</title>
+    </h:head>
+    <h:body>
+        <h:form id="form">  
+
+            <p:tabView>
+                <p:tab title="Authorization" id="credentials">
+                    <p:outputLabel value="You have to get access token from vk.com and PIN from twitter.com"/><br/>
+                    <h:outputLink value="#{authorizationBean.vkAuthUrl}" target="blank">Get access token from vk.com</h:outputLink>
+                    <br/>
+                    <b>Access token: </b>
+                    <p:inputText value="#{authorizationBean.vkAccessToken}"/>
+                    <br/>
+                    <b>User ID: </b>
+                    <p:inputText value="#{authorizationBean.vkID}"/>
+                    <br/><br/>
+                    <h:outputLink value="#{authorizationBean.twiAuthUrl}" target="blank">Get PIN from Twitter</h:outputLink>
+                    <br/>
+                    <b>PIN: </b>
+                    <p:inputText value="#{authorizationBean.twiPin}"/>
+                    <br/><br/>
+                    <p:commandButton actionListener="#{authorizationBean.toAuthorize()}" value="Submit"/>
+                    <br/>
+                    <p:commandButton actionListener="#{authorizationBean.clear()}" update="credentials" value="Delete credentials"/><br/><br/>
+                    <p:commandButton action="/faces/allNews.xhtml" value="To news"/><br/><br/>
+                    <p:commandButton action="/faces/start.xhtml" value="Return to start page"/>
+                </p:tab>
+            </p:tabView>
+           
+        </h:form> 
+    </h:body>
+</html>
+
