@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>News Aggregator 1.0 | All news</title>
+    </h:head>
+    <h:body>
+        <h:form id="form">
+            <p:dialog id="contentdlg" header="Current news" widgetVar="contentdlg" resizable="false" showEffect="size" modal="true">
+                                <p:tabView style="width: 700px; font-size: 15px;">
+                                    <p:tab title="Info">
+                                        <b>Posted</b> in
+                                        <p:outputLabel value="#{newsManagedBean.displayedNews.source}"/>
+                                        <br/>
+                                        <b>Date: </b>
+                                        <p:outputLabel value="#{newsManagedBean.displayedNews.date}"/>
+                                        <br/><br/>
+                                        <b>Text: </b><br/>
+                                        <p:outputLabel value="#{newsManagedBean.displayedNews.content}"/>
+                                        <br/><br/>
+                                        <h:outputLink target="blank" value="#{newsManagedBean.displayedNews.url}"> Original post</h:outputLink>
+                                        <br/><br/>
+                                        <p:commandButton action="#{newsManagedBean.toIgnore()}" styleClass="button" value="Ignore" style="width: 180px;"/>
+                                    </p:tab>
+                                    <p:tab title="Post in Twitter" disabled="#{newsManagedBean.disableTwitter()}">
+                                        <p:commandButton action="#{newsManagedBean.twitterPostCurrent()}" styleClass="button" value="Post in Twitter" style="width: 180px;"/><br/>
+                                        <p:commandButton action="#{newsManagedBean.retweet()}" value="Retweet" styleClass="button" style="width: 180px;"/><br/>
+                                        <p:commandButton action="#{newsManagedBean.toFav()}" value="To Favorite" styleClass="button" style="width: 180px"/><br/>
+                                    </p:tab>
+                                    <p:tab title="Post in VK"  disabled="#{newsManagedBean.disableVK()}">
+                                        <p:selectOneMenu value="#{newsManagedBean.vkDestination}">
+                                            <f:selectItem itemLabel="ФРТК МФТИ" itemValue="Main"/>
+                                            <f:selectItem itemLabel="Студенты 1-го курса" itemValue="31x"/>
+                                            <f:selectItem itemLabel="Студенты 2-го курса" itemValue="21x"/>
+                                            <f:selectItem itemLabel="Студенты 3-го курса" itemValue="11x"/>
+                                            <f:selectItem itemLabel="Студенты 4-го курса" itemValue="01x"/>
+                                            <f:selectItem itemLabel="Информ. департамент" itemValue="minitrue"/>
+                                        </p:selectOneMenu><br/>
+                                        <p:commandButton action="#{newsManagedBean.vkRepost()}" styleClass="button" value="Repost" style="width: 180px;"/><br/>
+                                        <p:commandButton action="#{newsManagedBean.vkPostCurrent()}" styleClass="button" value="Post" style="width: 180px;"/><br/>
+                                    </p:tab>
+                                </p:tabView>
+                            </p:dialog>
+            
+            
+            <p:tabView style="width: 900px; height: 500px; border: 1px;">
+                <p:tab title="News list" >
+                    <p:dataTable id="news" var="news" value="#{newsManagedBean.news}" style="width:100%; height:450px; overflow-y: scroll" >  
+                        <p:column style="font-family: Verdana; font-size: 15px; font-weight: sans-serif">
+                            <f:facet name="header"> Content</f:facet>
+<!--                            <p:outputLabel value="# {newsManagedBean.showContent(news)}"/>-->
+                        <p:commandLink actionListener="#{newsManagedBean.chooseDisplayedNews(news)}" value="#{newsManagedBean.showContent(news)}"
+                                           oncomplete="PF('contentdlg').show()" update=":form:contentdlg"/>
+                        </p:column>
+                        
+                        <p:column style="font-family: Verdana; font-size: 13px; font-weight: sans-serif; width: 80px;">
+                            <f:facet name="header"> Date</f:facet>
+                                #{news.date}
+                        </p:column>
+                        
+                        <p:column style="font-family: Verdana; font-size: 13px; font-weight: sans-serif; width: 80px;">
+                            <f:facet name="header"> Source</f:facet>
+                                #{news.source}
+                        </p:column>
+
+                        <p:column style="font-family: Verdana; font-size: 13px; font-weight: sans-serif; width: 80px;">
+                            <f:facet name="header"> Status</f:facet>
+                                #{newsManagedBean.checkStatus(news)}
+                        </p:column>
+                        
+<!--                        <p:column style="font-family: Verdana; font-size: 13px; font-weight: sans-serif" width="80">
+                 <p:commandButton actionListener="# {newsManagedBean.chooseDisplayedNews(news)}"
+                                             value="More" oncomplete="PF('contentdlg').show()" update=":form:contentdlg"/>
+                        </p:column>-->
+                        
+                        <p:column style="font-family: Verdana; font-size: 13px; font-weight: sans-serif" width="80">
+                            <p:commandButton actionListener="#{newsManagedBean.deleteNews(news)}" value="Delete"    
+                                             style="font-family: Verdana; font-size: 13px; font-weight: sans-serif" update="news"/>
+                        </p:column>
+                    </p:dataTable>  
+                    <br/>
+                    <p:commandButton value="Delete all news" actionListener="#{newsManagedBean.clearDB()}" update="news"/>
+                    <p:commandButton value="Update VK feed" actionListener="#{newsManagedBean.updateVkFeed()}" update="news"/>  
+                    <p:commandButton value="Update Twitter" actionListener="#{newsManagedBean.updateTwitter()}" update="news"/>  <br/>
+                    <p:outputLabel id="amount" value="Amount of news: #{newsManagedBean.newsCount}"/>
+                </p:tab>
+                
+                <p:tab title="Add news to list">
+                    
+                    <p:editor id="editor" value="#{generationBean.generatedContent}" width="600"/> 
+                    
+                    <h:panelGrid columns="2" style="margin-top:10px">  
+                        <p:commandButton id="submitButton" actionListener="#{generationBean.generateNews(generationBean.generatedContent)}" value="Submit" onclick="PF('postdlg').show()" update="display"/>  
+                    </h:panelGrid> 
+                    
+                    <p:dialog header="Content" widgetVar="postdlg" showEffect="fade" hideEffect="fade" modal="true">  
+                        <h:outputText id="display" value="News was added: #{generationBean.generatedContent}" escape="false" />  
+                    </p:dialog>
+                    
+                </p:tab>
+                
+                <p:tab title="Post in Twitter">
+                    <p:inputTextarea value="#{generationBean.twitterGeneratedContent}" maxlength="140" cols="70" rows="6"/><br/>
+                    <p:commandButton actionListener="#{generationBean.generateTwitterPost()}" value="Post"/>
+                </p:tab>
+                <p:tab title="Post in VK">
+                <p:inputTextarea value="#{generationBean.vkGeneratedContend}" cols="70" rows="6"/><br/>
+                <p:selectOneMenu value="#{generationBean.vkHashTag}">
+                    <f:selectItem itemLabel="#Студсовет" itemValue="#Студсовет@frtk_mipt"/>
+                    <f:selectItem itemLabel="#Жизнь_факультета" itemValue="#Жизнь_факультета@frtk_mipt"/>
+                    <f:selectItem itemLabel="#Учёба" itemValue="#Учёба@frtk_mipt"/>
+                    <f:selectItem itemLabel="#Карьера" itemValue="#Карьера@frtk_mipt"/>
+                    <f:selectItem itemLabel="#Спорт" itemValue="#Спорт@frtk_mipt"/>
+                    <f:selectItem itemLabel="#Экзамены" itemValue="#Экзамены@frtk_mipt"/>
+               </p:selectOneMenu>
+                    <p:selectOneMenu value="#{generationBean.vkDestination}" disabled="false">
+                        <f:selectItem itemLabel="ФРТК МФТИ" itemValue="Main"/>
+                        <f:selectItem itemLabel="Студенты 1-го курса" itemValue="31x"/>
+                        <f:selectItem itemLabel="Студенты 2-го курса" itemValue="21x"/>
+                        <f:selectItem itemLabel="Студенты 3-го курса" itemValue="11x"/>
+                        <f:selectItem itemLabel="Студенты 4-го курса" itemValue="01x"/>
+                        <f:selectItem itemLabel="Информ. департамент" itemValue="minitrue"/>
+                    </p:selectOneMenu><br/>
+                    <p:commandButton actionListener="#{generationBean.generateVkPost()}" value="Post"/>
+                </p:tab>
+                <p:tab title="E-mail delivery">
+                    Sorry, this page is in progress.
+                </p:tab>
+            </p:tabView>
+        </h:form>
+    </h:body>
+</html>
+
